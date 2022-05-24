@@ -1,0 +1,50 @@
+{% load static %}
+<nav class="navbar navbar-light" style="background-color: #333;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'home' %}" style="color:white">
+        <img src="{% static 'img/logo2.png' %}" alt="" width="30" height="24" class="d-inline-block align-text-top">
+        VACUNASSIST
+      </a>
+      <ul class="nav justify-content-end">
+        {% if request.user.is_authenticated %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {{request.user.first_name}} {{request.user.last_name}}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+
+              <li><a class="dropdown-item" href="{% url 'cerrar_sesion' %}">Cerrar Sesion</a></li>
+
+              {% if perfil == 'paciente' %}
+              <li><a class="dropdown-item" href="{% url 'ver_paciente'  %}">Perfil</a></li>
+              <li><a class="dropdown-item" href="{% url 'cambiar_contraseña' request.user.id %}">Cambiar contraseña</a></li>             
+              {% endif %}
+              {% if perfil == 'vacunador' %}
+              <li><a class="dropdown-item" href="{% url 'ver_vacunador'  %}">Perfil</a></li>
+              <li><a class="dropdown-item" href="{% url 'cambiar_contraseña' request.user.id %}">Cambiar contraseña</a></li>
+              <li><a class="dropdown-item" href="{% url 'crear_paciente'  %}">Registrar Paciente</a></li>
+              
+              {% endif %}
+              {% if perfil == 'administrador' %}
+              <li><a class="dropdown-item" href="{% url 'crear_vacunador'  %}">Registrar Vacunador</a></li>
+              <li><a class="dropdown-item" href="{% url 'eliminar_vacunador' %}">Eliminar Vacunador</a></li>
+              {% endif %}
+
+
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Iniciar Sesion</a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+              <li><a class="dropdown-item" href="{% url 'login_paciente' %}">Paciente</a></li>
+              <li><a class="dropdown-item" href="{% url 'login_general' %}">Vacunador/Administrador</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link link-light" href="{% url 'registro' %}">Registrarse</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+</nav>

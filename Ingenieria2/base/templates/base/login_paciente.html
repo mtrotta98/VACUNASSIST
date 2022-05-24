@@ -1,0 +1,47 @@
+{% extends 'main.html' %}
+
+{% block title %}
+    <title>VACUNASSIST | Log in</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
+    <form method="POST" action="">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-12">
+                <label>Email:</label>
+                <input class="form-control" type="email" name="username" placeholder="Ingrese su email"> 
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <label>Clave:</label>
+                <input class="form-control" type="password" name="password" placeholder="Ingrese su clave"> 
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <label>Token:</label>
+                <input class="form-control" type="text" name="token" placeholder="Ingrese su token"> 
+            </div>
+        </div>
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="row">
+            <div class="col-12 mt-3">
+              <input type="submit" class="btn btn-primary" value="Iniciar Sesion" />
+              <a href="{{request.META.HTTP_REFERER}}" class="btn btn-danger">Cancelar</a>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+{% endblock content %}

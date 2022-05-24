@@ -1,0 +1,11 @@
+\env
+
+Ingenieria2/base/__pycache__/
+texto.txt
+Ingenieria2/Proyecto/__pycache__/
+Ingenieria2/base/migrations/
+Ingenieria2/db.sqlite3
+base/__pycache__/
+db.sqlite3
+*/__pycache__
+*/__pycache__*

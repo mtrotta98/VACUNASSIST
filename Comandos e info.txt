@@ -1,0 +1,13 @@
+Para activar el ambiente y desactivar el ambiente que contiene todos los paquetes del proyecto: 
+env\scripts\activate
+env\scripts\deactivate
+
+
+Git ver ramas:
+
+git log --pretty --oneline --graph
+
+
+Migrar DB:
+python manage.py  makemigrations
+python manage.py  migrate

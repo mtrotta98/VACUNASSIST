@@ -1,0 +1,84 @@
+{% extends 'main.html' %}
+
+{% block title %}
+    <title>VACUNASSIST</title>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <p class="h2 text-center">Bienvenidos a VacunAssist</p>
+    </div>
+    <div class="row">
+        <p class="h3 text-center">Plan de vacunacion gratuito contra la fiebre amarilla, gripe y covid-19</p>
+    </div>
+    <div class="row text-center" style="margin-top: 45px;">
+        <div class="col-lg-4 col-md-2 col-sm-2">
+            <div class="card text-center">
+                <div class="card-header">
+                    <p class="h4">COVID-19</p>
+                </div>
+                <div class="collapse" id="collapseCovid">
+                    <div class="card-body">
+                        <p class="h5">Ambas dosis de la vacuna estan disponibles de forma gratuita para todas aquellas personas mayores a 18 años. Actualmente se encuentran disponibles, las siguientes vacunas: Sputnik V, CoviShield/AstraZeneca, Moderna, Pfizer, Convidecia y Sinopharm, pudiendo intercambiar las vacunas.</p>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <a data-bs-toggle="collapse" href="#collapseCovid" role="button" aria-expanded="false" aria-controls="collapseCovid">
+                        Ver mas >>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-2 col-sm-2">
+            <div class="card text-center">
+                <div class="card-header">
+                    <p class="h4">GRIPE</p>
+                </div>
+                <div class="collapse" id="collapseGripe">
+                    <div class="card-body">
+                        <p class="h5">La gripe o influenza es una enfermedad viral respiratoria que se presenta habitualmente en los meses más fríos del año. La dosis anual de la vacuna esta disponible de forma gratuita y obligatoria para todas aquellas personas que lo deseen.</p>
+                        <br>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <a data-bs-toggle="collapse" href="#collapseGripe" role="button" aria-expanded="false" aria-controls="collapseGripe">
+                        Ver mas >>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-2 col-sm-2">
+            <div class="card text-center">
+                <div class="card-header">
+                    <p class="h4">FIEBRE AMARILLA</p>
+                </div>
+                <div class="collapse" id="collapseFiebre">
+                    <div class="card-body">
+                        <p class="h5">La fiebre amarilla es una enfermedad transmitida por mosquitos infectados. La vacunación es la medida preventiva más importante y una sola dosis brinda protección de por vida. La dosis esta disponible para todas aquellas personas menores de 60 años.</p>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <a data-bs-toggle="collapse" href="#collapseFiebre" role="button" aria-expanded="false" aria-controls="collapseFiebre">
+                        Ver mas >>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 45px;">
+        <p class="h2 text-center">Plan Provincial</p>
+        <p class="h4 text-center">VACUNASSIST es un proyecto de un Plan Público, Gratuito y Optativo de vacunación contra el coronavirus, la gripe y la fiebre amarilla en la Ciudad de La Plata.</p>
+    </div>
+    <div class="row" style="margin-top: 45px;">
+        <div class="class="col-lg-4 col-md-2 col-sm-2"">
+            <p class="h2 text-center">Postas de vacunacion</p>
+            <p class="h4 text-center">Actualmente contamos con 3 postas de vacunacion, ubicadas para abarcar toda la Ciudad de La Plata.</p>
+            <ul class="list-group list-group-flush text-center">
+                <li class="list-group-item h4" style="background-color: #c1fc9e;">En la Municipalidad</li>
+                <li class="list-group-item h4" style="background-color: #c1fc9e;">En el Cementerio</li>
+                <li class="list-group-item h4" style="background-color: #c1fc9e;">En la Terminal de omnibus</li>
+            </ul>
+        </div>
+    </div>
+
+{% endblock content %}

@@ -1,0 +1,62 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h1>
+    Crear Vacunador
+</h1>
+{% if messages %}
+  <ul>
+    {% for message in messages %}
+      <li>{{message}}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+<form action="" method="POST">
+    {% csrf_token %}
+    <div class="row">
+        {{formUsuario.non_field_errors}}
+        {{formVacunador.non_field_errors}}
+        {% for field in formUsuario %}
+        <div class="col-6">
+            {{field.label}}
+            {{field}}
+            <div class="form-text">
+              {{field.help_text}}
+            </div>
+        </div>
+        {% endfor %} 
+    </div> 
+    
+    <div class="row">
+        {% for field2 in formVacunador %}
+        <div class="col-6">
+            {{field2.label}} 
+            {{field2}}
+            <div class="form-text">
+              {{field2.help_text}}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        <label>Posta</label>
+        <select name="posta" id="posta" class="form-control">
+          <option selected>Seleccione una posta</option>
+          <option value="Z1">Municipalidad</option>
+          <option value="Z2">Cementerio</option>
+          <option value="Z3">Terminal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="padding-top: 10px;">
+      <div class="col-2">
+        <input type="submit" class="btn btn-primary" value="Registrarse" />
+      </div>
+    </div>  
+  </form>
+
+{% endblock content %}
