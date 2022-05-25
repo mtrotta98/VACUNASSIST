@@ -13,7 +13,9 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
 
-              <li><a class="dropdown-item" href="{% url 'cerrar_sesion' %}">Cerrar Sesion</a></li>
+              <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalCerrarSesion">
+                Cerrar Sesion
+              </button></li>
 
               {% if perfil == 'paciente' %}
               <li><a class="dropdown-item" href="{% url 'ver_paciente'  %}">Perfil</a></li>
@@ -48,3 +50,21 @@
       </ul>
     </div>
 </nav>
+
+<div class="modal fade" id="modalCerrarSesion" tabindex="-1" aria-labelledby="modalCerrarSesion" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Cerrar Sesion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Desea cerrar sesion?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <a class="btn btn-primary" href="{% url 'cerrar_sesion' %}">Aceptar</a>
+      </div>
+    </div>
+  </div>
+</div>

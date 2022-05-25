@@ -2,7 +2,7 @@ import re
 from django.forms import ModelForm
 
 from .models import Paciente, Vacunador, Posta
-
+from datetime import date
 from django.contrib.auth.models import User
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -36,7 +36,7 @@ class FormularioUsuario(ModelForm):
 
         usuario = User.objects.filter(Q(username=cleaned_data.get("username")))
         if(usuario.exists()):
-            raise forms.ValidationError('El paciente ya esta cargado en el sistema.')
+            raise forms.ValidationError('El email ya esta cargado en el sistema.')
 
         return cleaned_data
 
@@ -50,7 +50,7 @@ class FormularioUsuario(ModelForm):
 
 class FormularioPaciente(ModelForm):
     dni = forms.CharField(required=True, label='Dni', help_text='Ingrese el dni sin puntos.')
-    fecha_de_nacimiento = forms.DateField(required=True, label='Fecha Nacimiento', widget=forms.DateInput(attrs={'type': 'date', 'max': '2019-12-31', 'min': '1932-01-01'}))
+    fecha_de_nacimiento = forms.DateField(required=True, label='Fecha Nacimiento', widget=forms.DateInput(attrs={'type': 'date', 'max': date.today(), 'min': '1932-01-01'}))
 
      #------Funcion para verificacion de datos------#
 
@@ -66,7 +66,7 @@ class FormularioPaciente(ModelForm):
 
         paciente = Paciente.objects.filter(dni=dni)
         if(paciente.exists()):
-            raise forms.ValidationError('El paciente ya esta cargado en el sistema.')
+            raise forms.ValidationError('El dni ya esta cargado en el sistema.')
 
         return cleaned_data
 
@@ -82,7 +82,7 @@ class FormularioPaciente(ModelForm):
 
 class FormularioVacunador(ModelForm):
     dni = forms.CharField(required=True, label='Dni', help_text='Ingrese el dni sin puntos.')
-    fecha_de_nacimiento = forms.DateField(required=True, label='Fecha Nacimiento', widget=forms.DateInput(attrs={'type': 'date', 'max': '2019-12-31', 'min': '1932-01-01'}))
+    fecha_de_nacimiento = forms.DateField(required=True, label='Fecha Nacimiento', widget=forms.DateInput(attrs={'type': 'date', 'max': '2004-12-31', 'min': '1932-01-01'}))
 
     def clean(self):
         cleaned_data = super().clean()
@@ -96,7 +96,7 @@ class FormularioVacunador(ModelForm):
 
         vacunador = Vacunador.objects.filter(dni=dni)
         if(vacunador.exists()):
-            raise forms.ValidationError('El vacunador ya esta cargado en el sistema.')
+            raise forms.ValidationError('El dni ya esta cargado en el sistema.')
 
         return cleaned_data
     

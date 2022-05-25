@@ -70,8 +70,7 @@ def registrarse(request):
             paciente.posta = posta
             paciente.save()
             paciente.enviar_mail_registro()
-            login(request, usuario)
-            return redirect('home')
+            return redirect('login_paciente')
         else:
             context = {'formUsuario': formUsuario, 'formPaciente': formPaciente}
             return render(request, 'base/registro_paciente.html', context)
@@ -233,7 +232,7 @@ def modificarVacunador(request, pk):
             return render(request, 'base/registro_paciente.html', context)
     formularioUsuario = FormularioModificarUsuario(instance=user)
     formularioVacunador = FormularioModificarVacunador(instance=vacunador)
-    context = {'formUsuario': formularioUsuario, 'formPaciente': formularioVacunador, 'perfil': perfil}
+    context = {'formUsuario': formularioUsuario, 'formPaciente': formularioVacunador, 'perfil': perfil, 'posta': vacunador.posta, 'posta_por_defecto': vacunador.posta.printNombre()}
     return render(request, 'base/registro_paciente.html', context)
 
 #-------ver Paciente-------#
