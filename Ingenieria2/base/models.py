@@ -10,7 +10,7 @@ class Vacuna(models.Model):
     VACUNAS = [
         ('GR', 'Gripe'),
         ('CV1', 'Covid Primera Dosis'),
-        ('CV2', 'Covid Primera Segunda'),
+        ('CV2', 'Covid Segunda Dosis'),
         ('FA', 'Fiebre Amarilla'),
         ('NA', 'No Aplica'),
     ]   

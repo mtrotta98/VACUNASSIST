@@ -19,4 +19,5 @@ urlpatterns = [
     path('cambiar_contraseña/<str:pk>/', views.cambioContraseña, name="cambiar_contraseña"),
     path('eliminar_vacunador/', views.eliminarVacunador, name="eliminar_vacunador"),
     path('descartar_vacunador/<str:pk>', views.descartarVacunador, name="descartar_vacunador"),
+    path('ver_mis_vacunas/', views.verMisVacunas, name='ver_mis_vacunas'),
 ]

@@ -5,37 +5,118 @@
         <img src="{% static 'img/logo2.png' %}" alt="" width="30" height="24" class="d-inline-block align-text-top">
         VACUNASSIST
       </a>
-      <ul class="nav justify-content-end">
-        {% if request.user.is_authenticated %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              {{request.user.first_name}} {{request.user.last_name}}
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
-
-              <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalCerrarSesion">
-                Cerrar Sesion
-              </button></li>
-
-              {% if perfil == 'paciente' %}
-              <li><a class="dropdown-item" href="{% url 'ver_paciente'  %}">Perfil</a></li>
-              <li><a class="dropdown-item" href="{% url 'cambiar_contraseña' request.user.id %}">Cambiar contraseña</a></li>             
-              {% endif %}
-              {% if perfil == 'vacunador' %}
-              <li><a class="dropdown-item" href="{% url 'ver_vacunador'  %}">Perfil</a></li>
-              <li><a class="dropdown-item" href="{% url 'cambiar_contraseña' request.user.id %}">Cambiar contraseña</a></li>
-              <li><a class="dropdown-item" href="{% url 'crear_paciente'  %}">Registrar Paciente</a></li>
-              
-              {% endif %}
-              {% if perfil == 'administrador' %}
-              <li><a class="dropdown-item" href="{% url 'crear_vacunador'  %}">Registrar Vacunador</a></li>
-              <li><a class="dropdown-item" href="{% url 'eliminar_vacunador' %}">Eliminar Vacunador</a></li>
-              {% endif %}
-
-
-            </ul>
-          </li>
+      {% if request.user.is_authenticated %}
+        {% if perfil == 'paciente' %}
+          <ul class="nav justify-content-end">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="{% url 'ver_mis_vacunas' %}">Ver Vacunas</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#">Cargar Historial</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Turnos
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="#">Ver Turnos</a></li>
+                <li><a class="dropdown-item" href="#">Solicitar Turnos Fiebre Amarilla</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {{request.user.first_name}} {{request.user.last_name}}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'ver_paciente'  %}">Perfil</a></li>
+                <li><a class="dropdown-item" href="{% url 'cambiar_contraseña' request.user.id %}">Cambiar contraseña</a></li>
+                <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalCerrarSesion">
+                  Cerrar Sesion
+                </button></li>
+              </ul>
+            </li>
+          </ul>
+        {% elif perfil == 'vacunador' %}
+          <ul class="nav justify-content-end">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#">Asignar Turno a Paciente</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Turnos
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="#">Turnos del Dia</a></li>
+                <li><a class="dropdown-item" href="#">Turnos Cancelados del Dia</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Vacunas
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="#">Vacunas Administradas del Dia</a></li>
+                <li><a class="dropdown-item" href="#">Vacunas por Fecha</a></li>
+                <li><a class="dropdown-item" href="#">Vacunas por Apellido</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {{request.user.first_name}} {{request.user.last_name}}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'ver_vacunador'  %}">Perfil</a></li>
+                <li><a class="dropdown-item" href="{% url 'cambiar_contraseña' request.user.id %}">Cambiar contraseña</a></li>
+                <li><a class="dropdown-item" href="{% url 'crear_paciente'  %}">Registrar Paciente</a></li>
+                <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalCerrarSesion">
+                  Cerrar Sesion
+                </button></li>
+              </ul>
+            </li>
+          </ul>
         {% else %}
+          <ul class="nav justify-content-end">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#">Turnos Fiebre Amarilla</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#">Reporte Grafico</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Turnos
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="#">Turnos del Dia</a></li>
+                <li><a class="dropdown-item" href="#">Turnos Cancelados del Dia</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Vacunas
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="#">Vacunas Administradas del Dia</a></li>
+                <li><a class="dropdown-item" href="#">Vacunas por Fecha</a></li>
+                <li><a class="dropdown-item" href="#">Vacunas por Apellido</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {{request.user.first_name}} {{request.user.last_name}}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'crear_vacunador'  %}">Registrar Vacunador</a></li>
+                <li><a class="dropdown-item" href="{% url 'eliminar_vacunador' %}">Eliminar Vacunador</a></li>
+                <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalCerrarSesion">
+                  Cerrar Sesion
+                </button></li>
+              </ul>
+            </li>
+          </ul>
+        {% endif %}
+      {% else %}
+        <ul class="nav justify-content-end">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Iniciar Sesion</a>
             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
@@ -46,8 +127,8 @@
           <li class="nav-item">
             <a class="nav-link link-light" href="{% url 'registro' %}">Registrarse</a>
           </li>
-        {% endif %}
-      </ul>
+        </ul>
+      {% endif %}
     </div>
 </nav>
 

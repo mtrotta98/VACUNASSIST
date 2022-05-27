@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
-from .models import Paciente, Vacunador
+from .models import Paciente, Turno, Vacunador
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 
@@ -193,7 +193,7 @@ def modificarPaciente(request, pk):
             paci.save()
             return redirect('home')
         else:
-            context = {'formUsuario': formularioUsuario, 'formPaciente': formularioPaciente, 'perfil': perfil}
+            context = {'formUsuario': formularioUsuario, 'formPaciente': formularioPaciente, 'perfil': perfil, 'posta':paciente.posta, 'posta_por_defecto' : paciente.posta.printNombre()}
             return render(request, 'base/registro_paciente.html', context)
     formularioUsuario = FormularioModificarUsuario(instance=user)
     formularioPaciente = FormularioModificarPaciente(instance=paciente)
@@ -228,7 +228,7 @@ def modificarVacunador(request, pk):
             paci.save()
             return redirect('home')
         else:
-            context = {'formUsuario': formularioUsuario, 'formVacunador': formularioVacunador, 'perfil': perfil}
+            context = {'formUsuario': formularioUsuario, 'formPaciente': formularioPaciente, 'perfil': perfil, 'posta': vacunador.posta, 'posta_por_defecto': vacunador.posta.printNombre()}
             return render(request, 'base/registro_paciente.html', context)
     formularioUsuario = FormularioModificarUsuario(instance=user)
     formularioVacunador = FormularioModificarVacunador(instance=vacunador)
@@ -317,8 +317,13 @@ def eliminarVacunador(request):
     else:
         perfil = 'vacunador'
     lista = User.objects.filter(groups__name='vacunador')
-    context = {"lista" : lista, 'perfil': perfil}
-    return render(request, 'base/eliminar_vacunador.html', context)
+    if(lista.exists()):
+        context = {"lista" : lista, 'perfil': perfil}
+        return render(request, 'base/eliminar_vacunador.html', context)
+    else:
+        messages.error(request, 'No hay vacunadores cargados.')
+        context = {'perfil': perfil}
+        return redirect('home')
 
 @login_required(login_url="login_general")
 def descartarVacunador(request, pk):
@@ -334,3 +339,16 @@ def descartarVacunador(request, pk):
         perfil = 'vacunador'
     context = {"lista" : lista, 'perfil': perfil}
     return render(request, 'base/eliminar_vacunador.html', context)
+
+@login_required(login_url="login_paciente")
+def verMisVacunas(request):
+    usuario = User.objects.get(id=request.user.id)
+    if(usuario.groups.filter(name='paciente')):
+        perfil = 'paciente'
+    elif(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+    else:
+        perfil = 'vacunador'
+    vacunas = Turno.objects.filter(user=usuario)
+    context = {'perfil': perfil, 'vacunas': vacunas}
+    return render(request, 'base/ver_mis_vacunas.html', context)

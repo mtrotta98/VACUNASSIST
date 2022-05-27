@@ -125,8 +125,8 @@ class FormularioModificarUsuario(ModelForm):
 
     #------Funcion para verificacion de datos------#
 
-    #def clean(self):
-        #cleaned_data = super().clean()
+    def clean(self):
+        cleaned_data = super().clean()
         #password = cleaned_data.get("password")
         #password_confirm = cleaned_data.get("password_confirm")
 
@@ -135,8 +135,12 @@ class FormularioModificarUsuario(ModelForm):
 
         #if(len(password) < 6):
             #raise forms.ValidationError('La contraseña debe contener mas de 6 caracteres.')
+        
+        user = User.objects.filter(username=cleaned_data.get('username')).exclude(pk=self.instance.pk)
+        if(user.exists()):
+            raise forms.ValidationError('El email ya esta cargado en el sistema')
 
-        #return cleaned_data
+        return cleaned_data
 
 
     def __init__(self, *args, **kwargs):

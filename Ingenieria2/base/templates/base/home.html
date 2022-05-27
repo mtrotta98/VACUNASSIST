@@ -5,6 +5,14 @@
 {% endblock %}
 
 {% block content %}
+    {% if messages %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {% for message in messages %}
+                    <strong>{{message}}</strong>
+                {% endfor %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
     <div class="row">
         <p class="h2 text-center">Bienvenidos a VacunAssist</p>
     </div>
