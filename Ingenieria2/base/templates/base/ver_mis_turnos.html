@@ -14,18 +14,24 @@
                 <th scope="col">DNI</th>
                 <th scope="col">Vacuna</th>
                 <th scope="col">Fecha</th>
-                <th scope="col">Comprobante</th>
+                <th scope="col">Estado</th>
               </tr>
             </thead>
             <tbody>
-              {% for vacuna in vacunas %}
+              {% for turno in turnos %}
                 <tr>
-                  <td>{{vacuna.paciente.user.first_name}}</td>
-                  <td>{{vacuna.paciente.user.last_name}}</td>
-                  <td>{{vacuna.paciente.dni}}</td>
-                  <td>{{vacuna.vacuna.get_name_display}}</td>
-                  <td>{{vacuna.fecha|date:'Y-m-d'}}</td>
-                  <td><a href="#" class="btn btn-primary">Obtener</a></td>
+                  <td>{{turno.user.user.first_name}}</td>
+                  <td>{{turno.user.user.last_name}}</td>
+                  <td>{{turno.user.dni}}</td>
+                  <td>{{turno.vacuna.get_name_display}}</td>
+                  <td>{{turno.fecha|date:'Y-m-d'}}</td>
+                  {% if turno.cancelado == True %}
+                    <td>Cancelado</td>
+                  {% elif turno.cancelado == False and turno.aprobacion == False %}
+                    <td>Pendiente</td>
+                  {% elif turno.aprobacion == True %}
+                    <td>Aprobado</td>
+                  {% endif %}
                 </tr>
               {% endfor %}
             </tbody>

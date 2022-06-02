@@ -22,11 +22,11 @@
                 <td>{{field.first_name}}</td>
                 <td>{{field.last_name}}</td>
                 <td>{{field.username}}</td>
-                <td><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEliminarVacunador">
+                <td><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#{{field.first_name}}{{field.last_name}}">
                   Eliminar
                 </button></td>
               </tr>
-              <div class="modal fade" id="modalEliminarVacunador" tabindex="-1" aria-labelledby="modalEliminarVacunador" aria-hidden="true">
+              <div class="modal fade" id="{{field.first_name}}{{field.last_name}}" tabindex="-1" aria-labelledby="{{field.first_name}}{{field.last_name}}" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
                     <div class="modal-header">

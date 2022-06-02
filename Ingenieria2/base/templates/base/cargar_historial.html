@@ -1,0 +1,79 @@
+{% extends 'main.html' %}
+
+{% block title %}
+  <title>VACUNASSIST | Cargar Historial</title>
+{% endblock %}
+
+{% block content %}
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="row">
+                <label for="">Gripe</label>
+                <div class="col-12">
+                    <input class="form-check-input" type="radio" name="gripe" id="gripeS" value="True">
+                    <label class="form-check-label" for="inlineRadio1">Si</label>
+                    <input class="form-check-input" type="radio" name="gripe" id="gripeN" value="False">
+                    <label class="form-check-label" for="inlineRadio2">No</label>  
+                </div>
+            </div>
+            <div class="row" hidden id="fechaG">
+                <div class="col-10">
+                    <label for="">Fecha</label>
+                    <input id="fechaGInput" name="fechaGInput" class="form-control" type="date" max="{{hoy|date:'Y-m-d'}}">
+                </div>
+            </div>
+            <div class="row">
+                <label for="">Covid Primera Dosis:</label>
+                <div class="col-12">
+                    <input class="form-check-input" type="radio" name="covid1" id="covid1S" value="True">
+                    <label class="form-check-label" for="inlineRadio1">Si</label>
+                    <input class="form-check-input" type="radio" name="covid1" id="covid1N" value="False">
+                    <label class="form-check-label" for="inlineRadio2">No</label>  
+                </div>
+            </div>
+            <div class="row" hidden id="fechaC1">
+                <div class="col-10">
+                    <label for="">Fecha</label>
+                    <input id="fechaC1Input" name="fechaC1Input" class="form-control" type="date" max="{{hoy|date:'Y-m-d'}}">
+                </div>
+            </div>
+            <div class="row">
+                <label for="">Covid Segunda Dosis</label>
+                <div class="col-12">
+                    <input class="form-check-input" type="radio" name="covid2" id="covid2S" value="True">
+                    <label class="form-check-label" for="inlineRadio1">Si</label>
+                    <input class="form-check-input" type="radio" name="covid2" id="covid2N" value="False">
+                    <label class="form-check-label" for="inlineRadio2">No</label>  
+                </div>
+            </div>
+            <div class="row" hidden id="fechaC2">
+                <div class="col-10">
+                    <label for="">Fecha</label>
+                    <input id="fechaC2Input" name="fechaC2Input" class="form-control" type="date" max="{{hoy|date:'Y-m-d'}}">
+                </div>
+            </div>
+            <div class="row">
+                <label for="">Fiebre Amarilla:</label>
+                <div class="col-12">
+                    <input class="form-check-input" type="radio" name="fiebreAmarilla" id="fiebreAmarillaS" value="True">
+                    <label class="form-check-label" for="inlineRadio1">Si</label>
+                    <input class="form-check-input" type="radio" name="fiebreAmarilla" id="fiebreAmarillaN" value="False">
+                    <label class="form-check-label" for="inlineRadio2">No</label>  
+                </div>
+            </div>
+            <div class="row" hidden id="fechaFB">
+                <div class="col-10">
+                    <label for="">Fecha</label>
+                    <input id="fechaFBinput" name="fechaFBinput" class="form-control" type="date" max="{{hoy|date:'Y-m-d'}}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 mt-3">
+                  <input type="submit" class="btn btn-primary" value="Cargar" />
+                  <a href="{{request.META.HTTP_REFERER}}" class="btn btn-danger">Cancelar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

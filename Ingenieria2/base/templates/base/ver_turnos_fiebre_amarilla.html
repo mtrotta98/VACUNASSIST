@@ -1,0 +1,36 @@
+{% extends 'main.html' %}
+
+{% block title %}
+  <title>VACUNASSIST | Evaluar Turnos</title>
+{% endblock %}
+
+{% block content %}
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
+        <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Apellido</th>
+                <th scope="col">DNI</th>
+                <th scope="col">Vacuna</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Aceptar</th>
+                <th scope="col">Rechazar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for turno in turnos %}
+                <tr>
+                  <td>{{turno.user.user.first_name}}</td>
+                  <td>{{turno.user.user.last_name}}</td>
+                  <td>{{turno.user.dni}}</td>
+                  <td>{{turno.vacuna.get_name_display}}</td>
+                  <td>{{turno.fecha|date:'Y-m-d'}}</td>
+                  <td><a href="{% url 'evaluar_turno' turno.user.id 'aprobado' %}" class="btn btn-success">Aceptar</a></td>
+                  <td><a href="{% url 'evaluar_turno' turno.user.id 'desaprobado' %}" class="btn btn-danger">Rechazar</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+    </div>
+{% endblock %}

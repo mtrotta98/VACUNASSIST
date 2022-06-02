@@ -19,5 +19,12 @@ urlpatterns = [
     path('cambiar_contraseña/<str:pk>/', views.cambioContraseña, name="cambiar_contraseña"),
     path('eliminar_vacunador/', views.eliminarVacunador, name="eliminar_vacunador"),
     path('descartar_vacunador/<str:pk>', views.descartarVacunador, name="descartar_vacunador"),
+    path('ver_turnos_del_dia/', views.verTurnosDelDiaVacunador, name='ver_turnos_del_dia_vacunador'),
+    path('historial_de_vacunas/', views.historialDeVacunas, name='historial_de_vacunas'),
+    path('asignar_turno_paciente/', views.asignarTurnoAPaciente, name='asignar_turno_paciente'),
     path('ver_mis_vacunas/', views.verMisVacunas, name='ver_mis_vacunas'),
+    path('ver_mis_turnos/', views.verMisTurnos, name='ver_mis_turnos'),
+    path('ver_turnos_fiebre_amarilla/', views.verTurnosFiebreAmarilla, name='ver_turnos_fiebre_amarilla'),
+    path('evaluar_turnos/<str:pk>/<str:evaluacion>', views.evaluarTurnosFiebreAmarilla, name='evaluar_turno'),
+    path('solicitar_turno_fiebre_amarilla/', views.solicitarTurnoFiebreAmarilla, name='solicitar_turno_fiebre_amarilla'),
 ]

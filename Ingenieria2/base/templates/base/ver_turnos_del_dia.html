@@ -1,0 +1,66 @@
+{% extends 'main.html' %}
+
+{% block title %}
+  <title>VACUNASSIST | Turnos del Dia</title>
+{% endblock %}
+
+{% block content %}
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
+        <form action="#" method="POST">
+            {% csrf_token %}
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Apellido</th>
+                    <th scope="col">DNI</th>
+                    <th scope="col">Vacuna</th>
+                    <th scope="col">Fecha</th>
+                    {% if perfil == 'vacunador' %}
+                    <th scope="col">Asistencia</th>
+                    {% elif perfil == 'administrador' %}
+                    <th scope="col">Posta</th>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for turno in turnos %}
+                    <tr>
+                        <td>{{turno.user.user.first_name}}</td>
+                        <td>{{turno.user.user.last_name}}</td>
+                        <td>{{turno.user.dni}}</td>
+                        <td>{{turno.vacuna.get_name_display}}</td>
+                        <td>{{turno.fecha|date:'Y-m-d'}}</td>
+                        {% if perfil == 'vacunador' %}
+                        <td><input type="checkbox" data-bs-toggle="modal" data-bs-target="#{{turno.user.user.first_name}}" class="form-check-input" name="turno_asistido" value="{{turno.id}}"/></td>
+                        {% elif perfil == 'administrador' %}
+                        <td>{{turno.posta.get_name_display}}</td>
+                        {% endif %}
+                    </tr>
+                    <div class="modal fade" id="{{turno.user.user.first_name}}" tabindex="-1" aria-labelledby="{{turno.user.user.first_name}}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="exampleModalLabel">Observaciones del Paciente</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <textarea name="observacion{{turno.user.id}}" id="observacion{{turno.user.id}}" cols="30" rows="2"></textarea>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% if perfil == 'vacunador' %}
+            <button type="submit" class="btn btn-primary">
+                Enviar
+            </button>
+            {% endif %}
+        </form>
+    </div>
+{% endblock %}
