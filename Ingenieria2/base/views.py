@@ -1,3 +1,4 @@
+from cmath import log
 from email import contentmanager, message
 import re
 from django.shortcuts import redirect, render
@@ -416,6 +417,7 @@ def historialDeVacunas(request):
     context = {'hoy': date.today()}
     return render(request, 'base/historial_de_vacunas.html', context)
 
+#-------Asignar turno a paciente como vacunador-------#
 @login_required(login_url='login_general')
 def asignarTurnoAPaciente(request):
     usuario = User.objects.get(id=request.user.id)
@@ -458,6 +460,7 @@ def asignarTurnoAPaciente(request):
     context = {'perfil':perfil, 'vacunas':vacunas}
     return render(request, 'base/asignar_turno_paciente.html', context)
 
+#-------Mostrar las vacunas del paciente-------#
 @login_required(login_url='login_paciente')
 def verMisVacunas(request):
     usuario = User.objects.get(id=request.user.id)
@@ -471,6 +474,7 @@ def verMisVacunas(request):
     context = {'perfil': perfil, 'vacunas':vacunas}
     return render(request, 'base/ver_mis_vacunas.html', context)
 
+#-------Mostrar los turnos del paciente-------#
 @login_required(login_url='login_paciente')
 def verMisTurnos(request):
     usuario = User.objects.get(id=request.user.id)
@@ -484,6 +488,7 @@ def verMisTurnos(request):
     context = {'perfil': perfil, 'turnos':turnos}
     return render(request, 'base/ver_mis_turnos.html', context)
 
+#-------Ver los turnos de fiebre amarilla como administrador-------#
 @login_required(login_url='login_general')
 def verTurnosFiebreAmarilla(request):
     usuario = User.objects.get(id=request.user.id)
@@ -494,7 +499,7 @@ def verTurnosFiebreAmarilla(request):
     else:
         perfil = 'vacunador'
     turnos = Turno.objects.filter(Q(aprobacion=False) & Q(vacuna__name='FA') & Q(cancelado=False))
-    if(turnos.exists):
+    if(turnos.exists()):
         context = {'perfil':perfil, 'turnos':turnos}
         return render(request, 'base/ver_turnos_fiebre_amarilla.html', context)
     else:
@@ -502,6 +507,7 @@ def verTurnosFiebreAmarilla(request):
         context = {'perfil':perfil}
         return redirect('home')
 
+#-------Evaluacion del administrador sobre los turnos de fiebre amarilla-------#
 @login_required(login_url='login_general')
 def evaluarTurnosFiebreAmarilla(request, pk, evaluacion):
     if(evaluacion == 'aprobado'):
@@ -511,6 +517,7 @@ def evaluarTurnosFiebreAmarilla(request, pk, evaluacion):
         turno = Turno.objects.filter(Q(user__id=pk) & Q(vacuna__name='FA')).update(cancelado=True)
         return redirect('ver_turnos_fiebre_amarilla')
 
+#-------Solicitar turno de fiebre amarilla como paciente-------#
 @login_required(login_url='login_paciente')
 def solicitarTurnoFiebreAmarilla(request):
     usuario = User.objects.get(id=request.user.id)
@@ -539,3 +546,41 @@ def solicitarTurnoFiebreAmarilla(request):
         else:
             context = {'perfil':perfil, 'hoy':date.today()}
             return render(request, 'base/solicitar_turno_fiebre_amarilla.html', context)
+
+#-------Mostrar las vacunas administradas del dia.-------#
+@login_required(login_url='login_general')
+def verVacunasDelDia(request):
+    usuario = User.objects.get(id=request.user.id)
+    if(usuario.groups.filter(name='paciente')):
+        perfil = 'paciente'
+    elif(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+    else:
+        perfil = 'vacunador'
+    turnos = Turno.objects.filter(Q(asistencia=True) & Q(fecha=date.today()))
+    if(turnos.exists()):
+        context = {'perfil':perfil, 'turnos':turnos}
+        return render(request, 'base/vacunas_del_dia.html', context)
+    else:
+        messages.error(request, 'No se administraron vacunas en el dia.')
+        context = {'perfil':perfil}
+        return redirect('home')
+
+#-------Mostrar los turnos cancelados del dia.-------#
+@login_required(login_url='login_general')
+def verTurnosCanceladosDelDia(request):
+    usuario = User.objects.get(id=request.user.id)
+    if(usuario.groups.filter(name='paciente')):
+        perfil = 'paciente'
+    elif(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+    else:
+        perfil = 'vacunador'
+    turnos = Turno.objects.filter(Q(asistencia=False) & Q(fecha=date.today()))
+    if(turnos.exists()):
+        context = {'perfil':perfil, 'turnos':turnos}
+        return render(request, 'base/vacunas_del_dia.html', context)
+    else:
+        messages.error(request, 'No hay turnos cancelados en el dia.')
+        context = {'perfil':perfil}
+        return redirect('home')

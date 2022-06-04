@@ -27,4 +27,6 @@ urlpatterns = [
     path('ver_turnos_fiebre_amarilla/', views.verTurnosFiebreAmarilla, name='ver_turnos_fiebre_amarilla'),
     path('evaluar_turnos/<str:pk>/<str:evaluacion>', views.evaluarTurnosFiebreAmarilla, name='evaluar_turno'),
     path('solicitar_turno_fiebre_amarilla/', views.solicitarTurnoFiebreAmarilla, name='solicitar_turno_fiebre_amarilla'),
+    path('vacunas_del_dia', views.verVacunasDelDia, name='vacunas_del_dia'),
+    path('turnos_cancelados_del_dia', views.verTurnosCanceladosDelDia, name='turnos_cancelados_del_dia'),
 ]
