@@ -1,0 +1,39 @@
+
+{% extends 'main.html' %}
+
+{% block title %}
+  <title>VACUNASSIST | Turnos de Fiebre Amarilla</title>
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+            <strong>{{message}}</strong>
+        {% endfor %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+<body>      
+    <div class="container-fluid" style="background-color: #c1fc9e; min-height: 100vh;">
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
+            <form method="POST" action="">
+                {% csrf_token %}
+                    <label for="">Ingrese el DNI del Paciente</label>
+                    <div class="col-12">
+                        <input class="form-control"  name="dni" id="dni_PASTU" value="">
+                    </div>
+                
+                <div class="row">
+                    <div class="col-12 mt-3">
+                      <input type="submit" class="btn btn-primary" name="completar_dni" id="completar_dni" value="Completar DNI" />
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}

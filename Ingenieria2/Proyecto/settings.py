@@ -27,12 +27,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'nicolastrotta88@gmail.com'
-EMAIL_HOST_PASSWORD = 'Manuwear123'
-EMAIL_PORT = 587
+EMAIL_HOST = 'smtp.mailtrap.io'
+EMAIL_HOST_USER = 'eff9de5c2d2573'
+EMAIL_HOST_PASSWORD = '4b08ba2521c0a7'
+EMAIL_PORT = '2525'
+EMAIL_USE_SSL = False
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Application definition
 
@@ -44,7 +47,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'base.apps.BaseConfig',
+    'django_apscheduler',
 ]
+
+# This scheduler config will:
+# - Store jobs in the project database
+# - Execute jobs in threads inside the application process
+SCHEDULER_CONFIG = {
+    "apscheduler.jobstores.default": {
+        "class": "django_apscheduler.jobstores:DjangoJobStore"
+    },
+    'apscheduler.executors.processpool': {
+        "type": "threadpool"
+    },
+}
+SCHEDULER_AUTOSTART = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

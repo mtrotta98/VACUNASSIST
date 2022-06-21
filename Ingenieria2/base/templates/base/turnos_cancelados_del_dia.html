@@ -1,0 +1,50 @@
+{% extends 'main.html' %}
+
+{% block title %}
+  <title>VACUNASSIST | Turnos Cancelados del Dia</title>
+{% endblock %}
+
+{% block content %}
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
+        <form action="#" method="POST">
+            {% csrf_token %}
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Apellido</th>
+                    <th scope="col">DNI</th>
+                    <th scope="col">Vacuna</th>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Posta</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for turno in turnos %}
+                    {% if perfil == 'administrador' %}
+                    <tr>
+                        <td>{{turno.user.user.first_name}}</td>
+                        <td>{{turno.user.user.last_name}}</td>
+                        <td>{{turno.user.dni}}</td>
+                        <td>{{turno.vacuna.get_name_display}}</td>
+                        <td>{{turno.fecha|date:'Y-m-d'}}</td>
+                        <td>{{turno.posta.get_name_display}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if perfil == 'vacunador' %}
+                    <tr>
+                        <td>{{turno.user.user.first_name}}</td>
+                        <td>{{turno.user.user.last_name}}</td>
+                        <td>{{turno.user.dni}}</td>
+                        <td>{{turno.vacuna.get_name_display}}</td>
+                        <td>{{turno.fecha|date:'Y-m-d'}}</td>
+                        <td>{{turno.posta.get_name_display}}</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+            <a class="btn btn-primary" href="{% url 'home' %}"> Volver al Home </a>
+        </form>
+    </div>
+{% endblock %}

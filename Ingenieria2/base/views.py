@@ -1,20 +1,36 @@
-from cmath import log
-from email import contentmanager, message
-import re
+from email import contentmanager
+from this import d
 from django.shortcuts import redirect, render
 from .forms import FormularioPaciente, FormularioUsuario, FormularioVacunador
 from django.template import context
-from .forms import FormularioModificarVacunador,FormularioPaciente, FormularioUsuario, FormularioModificarUsuario, FormularioModificarPaciente, FormularioCambioContraseña,FormularioVerUsuario,FormularioVerPaciente, FormularioVerVacunador
+from .forms import FormularioAsignarTurno, FormularioModificarVacunador,FormularioPaciente, FormularioUsuario, FormularioModificarUsuario, FormularioModificarPaciente, FormularioCambioContraseña,FormularioVerUsuario,FormularioVerPaciente, FormularioVerVacunador
 from base.models import Posta
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
-from .models import Paciente, Paciente_Vacuna, Turno, Vacuna, Vacunador
+from .models import Paciente, Paciente_Vacuna, Turno, Vacunador, Vacuna
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from datetime import date
+from datetime import date, datetime, timedelta
+from django.urls import reverse
+from urllib.parse import urlencode
+from django.utils.crypto import get_random_string
+from . import utils
+from pathlib import Path
+import os
+
+diccionario_vacunas = { 'Gripe' : 'GR',
+    'Covid Primera Dosis' : 'CV1',
+    'Covid Segunda Dosis' :  'CV2',
+    'Fiebre Amarilla' :'FA',
+    'No Aplica' : 'NA'}
+
+diccionario_zonas = { 'Municipalidad' : 'Z1',
+        'Cementerio': 'Z2',
+        'Terminal': 'Z3',
+        'No Aplica':'NA' }
 
 #------Login de paciente-------#
 def loginPaciente(request):
@@ -24,15 +40,18 @@ def loginPaciente(request):
         token = request.POST.get('token')
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            paciente = Paciente.objects.get(user=user)
-            if paciente.token == token:
-                login(request, user)
-                if(paciente.historial == False):
-                    return redirect('historial_de_vacunas')
+            if(user.groups.filter(name='paciente')):
+                paciente = Paciente.objects.get(user=user)
+                if paciente.token == token:
+                    login(request, user)
+                    if(paciente.historial == False):
+                        return redirect('historial_de_vacunas')
+                    else:
+                        return redirect('home')
                 else:
-                    return redirect('home')
+                    messages.error(request, 'Token invalido')
             else:
-                messages.error(request, 'Token invalido')
+                return redirect('login_general')
         else:
             messages.error(request, 'Usuario o password invalidos')
     context = {}
@@ -47,8 +66,11 @@ def loginGeneral(request):
          user = authenticate(request, username=username, password=password)
  
          if user is not None:
-             login(request, user)
-             return redirect('home')
+            if(user.groups.filter(name='paciente')):
+                return redirect('login_paciente')
+            else:
+                login(request, user)
+                return redirect('home')
          else:
             messages.error(request, 'Usuario o password invalidos')
     context = {}
@@ -74,8 +96,9 @@ def registrarse(request):
             paciente = formPaciente.save(commit=False)
             paciente.user = usuario
             paciente.posta = posta
-            paciente.save()
+            paciente.token = get_random_string(length=4)
             paciente.enviar_mail_registro()
+            paciente.save()
             return redirect('login_paciente')
         else:
             context = {'formUsuario': formUsuario, 'formPaciente': formPaciente}
@@ -384,7 +407,55 @@ def verTurnosDelDiaVacunador(request):
         context = {'perfil':perfil}
         return redirect('home')
 
-#-------Carga de historial de vacunas y asignacion de turnos segun rango de edades y fechas-------#
+
+@login_required(login_url="login_general")
+def aceptarTurnoFiebreAmarilla(request):
+    usuario = User.objects.get(id=request.user.id)
+    if(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+        turnos = Turno.objects.filter(Q(vacuna__name='FA') & Q(asistencia=False) & Q(aprobacion =False) & Q(cancelado=False))
+    if(turnos.exists()):   
+        context = {'perfil':perfil, 'turnos': turnos}
+        return render(request, 'base/aceptar_turno_fa.html', context)
+    else:
+        messages.error(request, 'No hay turnos de fiebre amarilla para evaluar.')
+        context = {'perfil':perfil}
+        return redirect('home')
+
+@login_required(login_url="login_general")
+def aceptarTurnoFA(request, pk):
+    turno = Turno.objects.get(pk=pk)
+    turno.aprobacion = True
+    paciente = Paciente.objects.get(id=turno.user.id)
+    paciente.enviar_mail_recordatorio(turno.fecha, turno.vacuna, True)
+    turno.save()
+    return redirect('aceptar_turno_fa')
+
+@login_required(login_url="login_general")
+def cancelarTurnoFA(request, pk):
+    turno = Turno.objects.get(pk=pk)
+    turno.cancelado = True
+    turno.save()
+    return redirect('aceptar_turno_fa')
+
+@login_required(login_url="login_general")
+def turnosCancelados(request):
+    usuario = User.objects.get(id=request.user.id)
+    if(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+        turnos = Turno.objects.filter(Q(fecha=date.today()) & Q(cancelado=True) & Q(asistencia=False))
+    else:
+        perfil = 'vacunador'
+        vacunador = Vacunador.objects.get(user=usuario)
+        turnos = Turno.objects.filter(Q(fecha=date.today()) & Q(cancelado=True) & Q(asistencia=False) & Q(posta=vacunador.posta))
+    if(turnos.exists()):   
+        context = {'perfil':perfil, 'turnos': turnos}
+        return render(request, 'base/turnos_cancelados_del_dia.html', context)
+    else:
+        messages.error(request, 'No hay turnos cancelados en el dia.')
+        return redirect('home')
+
+#-------Carga de historial de vacunas y asignacion de turnos segun rando de edades y fechas-------#
 def historialDeVacunas(request):
     if(request.method == 'POST'):
         paciente = Paciente.objects.get(user=request.user)
@@ -417,111 +488,98 @@ def historialDeVacunas(request):
     context = {'hoy': date.today()}
     return render(request, 'base/historial_de_vacunas.html', context)
 
-#-------Asignar turno a paciente como vacunador-------#
-@login_required(login_url='login_general')
-def asignarTurnoAPaciente(request):
-    usuario = User.objects.get(id=request.user.id)
-    if(usuario.groups.filter(name='paciente')):
-        perfil = 'paciente'
-    elif(usuario.groups.filter(name='administrador')):
-        perfil = 'administrador'
-    else:
-        perfil = 'vacunador'
+
+#-------ver vacunas paciente-------#
+def verVacunasPaciente(request):
+    perfil = 'paciente'
+
+    def filtrar_mis_vacunas(paciente_vacuna):
+        if (paciente_vacuna.paciente.user.id == request.user.id):
+            return True
+        return False
+
+    paciente_vacunas = Paciente_Vacuna.objects.all()
+    paciente_vacunas = filter(filtrar_mis_vacunas ,paciente_vacunas)
+    paciente_vacunas = list(paciente_vacunas)
+
+    context = {'perfil':perfil, 'vacunas': paciente_vacunas}
+
     if(request.method == 'POST'):
-        usuario = Paciente.objects.filter(Q(dni=request.POST.get('dni')))
-        if(usuario.exists()):
-            turno_existente = Turno.objects.filter(Q(user__dni=request.POST.get('dni')) & Q(vacuna__name=request.POST.get('vacuna')) & Q(cancelado=False) & Q(asistencia=False))
-            if(not turno_existente.exists()):
-                paciente = Paciente.objects.get(dni=request.POST.get('dni'))
-                vacuna = Vacuna.objects.get(name=request.POST.get('vacuna'))
-                if(vacuna.name == 'FA'):
-                    if(paciente.calcularEdad() > 60):
-                        messages.error(request, 'El paciente tiene mas de 60 años y no deberia aplicarse la vacuna')
-                    else:
-                        turno = Turno.objects.create(user=paciente, fecha=date.today(), posta=paciente.posta, vacuna=vacuna, aprobacion=True, cancelado=False, asistencia=False)
-                        turno.save()
-                        return redirect('home')
-                elif(vacuna.name == 'CV1'):
-                    if(paciente.calcularEdad() < 18):
-                        messages.error(request, 'El paciente tiene menos de 18 años y no deberia aplicarse la vacuna')
-                    else:
-                        turno = Turno.objects.create(user=paciente, fecha=date.today(), posta=paciente.posta, vacuna=vacuna, aprobacion=True, cancelado=False, asistencia=False)
-                        turno.save()
-                        return redirect('home')
-                else:
-                    turno = Turno.objects.create(user=paciente, fecha=date.today(), posta=paciente.posta, vacuna=vacuna, aprobacion=True, cancelado=False, asistencia=False)
-                    turno.save()
-                    return redirect('home')
-            else:
-                messages.error(request, 'El paciente ya tiene un turno asignado para esta vacuna')
-        else:
-            messages.error(request, 'El paciente no esta cargado en el sistema')
-    vacunas = Vacuna.objects.all()
-    context = {'perfil':perfil, 'vacunas':vacunas}
-    return render(request, 'base/asignar_turno_paciente.html', context)
+        return redirect('home')
 
-#-------Mostrar las vacunas del paciente-------#
-@login_required(login_url='login_paciente')
-def verMisVacunas(request):
-    usuario = User.objects.get(id=request.user.id)
-    if(usuario.groups.filter(name='paciente')):
-        perfil = 'paciente'
-    elif(usuario.groups.filter(name='administrador')):
-        perfil = 'administrador'
+    if(len(paciente_vacunas)>0):   
+        context = {'perfil':perfil, 'vacunas': paciente_vacunas}
+        return render(request, 'base/ver_vacunas_paciente.html', context)
     else:
-        perfil = 'vacunador'
-    vacunas = Paciente_Vacuna.objects.filter(Q(paciente__user__id=request.user.id))
-    context = {'perfil': perfil, 'vacunas':vacunas}
-    return render(request, 'base/ver_mis_vacunas.html', context)
-
-#-------Mostrar los turnos del paciente-------#
-@login_required(login_url='login_paciente')
-def verMisTurnos(request):
-    usuario = User.objects.get(id=request.user.id)
-    if(usuario.groups.filter(name='paciente')):
-        perfil = 'paciente'
-    elif(usuario.groups.filter(name='administrador')):
-        perfil = 'administrador'
-    else:
-        perfil = 'vacunador'
-    turnos = Turno.objects.filter(Q(user__user__id=request.user.id) & Q(asistencia=False))
-    context = {'perfil': perfil, 'turnos':turnos}
-    return render(request, 'base/ver_mis_turnos.html', context)
-
-#-------Ver los turnos de fiebre amarilla como administrador-------#
-@login_required(login_url='login_general')
-def verTurnosFiebreAmarilla(request):
-    usuario = User.objects.get(id=request.user.id)
-    if(usuario.groups.filter(name='paciente')):
-        perfil = 'paciente'
-    elif(usuario.groups.filter(name='administrador')):
-        perfil = 'administrador'
-    else:
-        perfil = 'vacunador'
-    turnos = Turno.objects.filter(Q(aprobacion=False) & Q(vacuna__name='FA') & Q(cancelado=False))
-    if(turnos.exists()):
-        context = {'perfil':perfil, 'turnos':turnos}
-        return render(request, 'base/ver_turnos_fiebre_amarilla.html', context)
-    else:
-        messages.error(request, 'No hay turnos de fiebre amarilla solicitados.')
+        messages.error(request, 'No existen vacunas en el historial.')
         context = {'perfil':perfil}
         return redirect('home')
 
-#-------Evaluacion del administrador sobre los turnos de fiebre amarilla-------#
-@login_required(login_url='login_general')
-def evaluarTurnosFiebreAmarilla(request, pk, evaluacion):
-    if(evaluacion == 'aprobado'):
-        turno = Turno.objects.filter(Q(user__id=pk) & Q(vacuna__name='FA')).update(aprobacion=True)
-        return redirect('ver_turnos_fiebre_amarilla')
-    else:
-        turno = Turno.objects.filter(Q(user__id=pk) & Q(vacuna__name='FA')).update(cancelado=True)
-        return redirect('ver_turnos_fiebre_amarilla')
+#-------Ver turnos paciente-------#
+def verTurnosPaciente(request):
+    perfil = 'paciente'
+    def filtrar_mis_turnos(turnos):
+        if (turnos.user.user.id == request.user.id):
+            return True
+        return False
 
-#-------Solicitar turno de fiebre amarilla como paciente-------#
-@login_required(login_url='login_paciente')
-def solicitarTurnoFiebreAmarilla(request):
+    turnos = Turno.objects.all()
+    turnos = filter(filtrar_mis_turnos ,turnos)
+    turnos = list(turnos)
+
+    context = {'perfil':perfil, 'turnos': turnos}
+
+    if(request.method == 'POST'):
+        return redirect('home')
+        
+    if(len(turnos)>0):   
+        context = {'perfil':perfil, 'turnos': turnos}
+        return render(request, 'base/ver_turnos_paciente.html', context)
+    else:
+        messages.error(request, 'No existen turnos para el paciente.')
+        context = {'perfil':perfil}
+        return redirect('home')
+
+#-------Ver vacunas administradas del dia-------#
+def verVacunasAdministradas(request):
     usuario = User.objects.get(id=request.user.id)
-    paciente = Paciente.objects.get(user__id=request.user.id)
+    if(usuario.groups.filter(name='paciente')):
+        perfil = 'paciente'
+    elif(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+    else:
+        perfil = 'vacunador'
+
+    def filtrar_vacunas(turnos):
+        if perfil == 'vacunador':
+            posta_vacunador = Vacunador.objects.get(user=usuario).posta
+            return turnos.asistencia & (turnos.fecha == date.today()) & (turnos.posta == posta_vacunador)
+        else: 
+            return turnos.asistencia & (turnos.fecha == date.today())
+
+    turnos = Turno.objects.all()
+    turnos = filter(filtrar_vacunas ,turnos)
+    turnos = list(turnos)
+
+    context = {'perfil':perfil, 'turnos': turnos}
+
+    if(request.method == 'POST'):
+        return redirect('home')
+        
+    if(len(turnos)>0):   
+        context = {'perfil':perfil, 'turnos': turnos}
+        return render(request, 'base/ver_vacunas_administradas.html', context)
+    else:
+        messages.error(request, 'No hubo vacunas administradas durante el día')
+        context = {'perfil':perfil}
+        return redirect('home')
+
+#-------Asignar turno a paciente como vacunador-------#
+
+
+@login_required(login_url="login_general")
+def preAsignarTurno(request):
+    usuario = User.objects.get(id=request.user.id)
     if(usuario.groups.filter(name='paciente')):
         perfil = 'paciente'
     elif(usuario.groups.filter(name='administrador')):
@@ -529,58 +587,140 @@ def solicitarTurnoFiebreAmarilla(request):
     else:
         perfil = 'vacunador'
     if(request.method == 'POST'):
-        vacuna = Vacuna.objects.get(name='FA')
-        turno = Turno.objects.create(user=paciente, fecha=request.POST.get('fecha'), posta=paciente.posta, vacuna=vacuna, aprobacion=False, cancelado=False, asistencia=False)
+        dni_paciente= request.POST.get('dni')
+        base_url = reverse('asignar_turno')  
+        query_string =  urlencode({'dni_paciente': dni_paciente})  
+        url = '{}?{}'.format(base_url, query_string) 
+
+        dni_pacientes =   list(Paciente.objects.values('dni'))
+
+
+
+
+        dni_posibles = []
+        for each in dni_pacientes:
+            dni_posibles.append(int(each['dni']))
+
+        print("------------")
+        print(dni_paciente)
+        print(dni_posibles)
+        print("------------")
+        if not (int(dni_paciente) in dni_posibles):
+            messages.error(request, 'El DNI no corresponde a un paciente')
+            return redirect('pre_asignar_turno')
+        else:
+            paciente = Paciente.objects.get(dni=int(dni_paciente))
+            vacunas_disponibles = ["Covid Primera Dosis", "Covid Segunda Dosis", "Gripe", 'Fiebre Amarilla']
+            vacunas_dadas = Paciente_Vacuna.objects.filter(paciente=paciente)
+            if paciente.edad() < 18:
+                    vacunas_disponibles.remove("Covid Primera Dosis")
+                    vacunas_disponibles.remove("Covid Segunda Dosis")
+            if paciente.edad() > 60:
+                vacunas_disponibles.remove('Fiebre Amarilla')
+                
+            for vacuna_dada in vacunas_dadas:
+                if vacuna_dada.vacuna.name == 'FA' and 'Fiebre Amarilla' in vacunas_disponibles:
+                    vacunas_disponibles.remove('Fiebre Amarilla')
+                    print('hello2')
+                elif vacuna_dada.vacuna.name == 'CV1' and "Covid Primera Dosis" in vacunas_disponibles :
+                    vacunas_disponibles.remove('Covid Primera Dosis')
+                    print('hello3')
+                elif vacuna_dada.vacuna.name == 'CV2'  and "Covid Segunda Dosis" in vacunas_disponibles:
+                    vacunas_disponibles.remove('Covid Segunda Dosis')
+                elif vacuna_dada.vacuna.name == 'GR' and "Gripe" in vacunas_disponibles and vacuna_dada.fecha.year == date.today().year:
+                    vacunas_disponibles.remove('Gripe')  
+            if len(vacunas_disponibles) < 1:
+                messages.error(request, 'El paciente ya se ha vacunado o no cumple con las condiciones')
+                return redirect('pre_asignar_turno')  
+            else:
+                print('redirect')
+                return redirect(url)
+    context = {'perfil':perfil}
+    return render(request, 'base/pre_asignar_turno.html',context)
+
+@login_required(login_url="login_general")
+def asignarTurno(request):
+    usuario = User.objects.get(id=request.user.id)
+    if(usuario.groups.filter(name='paciente')):
+        perfil = 'paciente'
+    elif(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+    else:
+        perfil = 'vacunador'
+    dni_paciente = request.GET.get('dni_paciente')
+    usuario = User.objects.get(id=request.user.id)
+    posta_vacunador = Vacunador.objects.get(user=usuario).posta.printNombre()
+
+    paciente = Paciente.objects.get(dni=int(dni_paciente))
+    vacunas_disponibles = ["Covid Primera Dosis", "Covid Segunda Dosis", "Gripe", 'Fiebre Amarilla']
+    vacunas_dadas = Paciente_Vacuna.objects.filter(paciente=paciente)
+    if paciente.edad() < 18:
+            vacunas_disponibles.remove("Covid Primera Dosis")
+            vacunas_disponibles.remove("Covid Segunda Dosis")
+    if paciente.edad() > 60:
+        vacunas_disponibles.remove('Fiebre Amarilla')
+
+    for vacuna_dada in vacunas_dadas:
+        if vacuna_dada.vacuna.name == 'FA' and 'Fiebre Amarilla' in vacunas_disponibles:
+            vacunas_disponibles.remove('Fiebre Amarilla')
+        elif vacuna_dada.vacuna.name == 'CV1' and "Covid Primera Dosis" in vacunas_disponibles :
+            vacunas_disponibles.remove('Covid Primera Dosis')
+        elif vacuna_dada.vacuna.name == 'CV2'  and "Covid Segunda Dosis" in vacunas_disponibles:
+            vacunas_disponibles.remove('Covid Segunda Dosis')
+        elif vacuna_dada.vacuna.name == 'GR' and "Gripe" in vacunas_disponibles and vacuna_dada.fecha.year == date.today().year:
+            vacunas_disponibles.remove('Gripe')     
+        
+    if(request.method == 'POST'):
+        vacuna=request.POST.get("vacunas disponibles")
+        vacuna = Vacuna.objects.get(name=diccionario_vacunas[vacuna])
+        posta = Posta.objects.get(name=diccionario_zonas[posta_vacunador])
+        turno = Turno.objects.create(user=paciente, posta=posta, vacuna=vacuna, fecha=date.today(), aprobacion=True)
         turno.save()
+
+        return redirect('home')
+
+    context = {'hoy': date.today(), 'posta': posta_vacunador, 'vacunas_disponibles': vacunas_disponibles, 'dni_paciente' : dni_paciente, 'nombre_paciente' :paciente,'perfil':perfil  }
+    return render(request, 'base/asignar_turno.html', context)
+
+
+
+def reservarTurnoFA(request):
+    paciente = Paciente.objects.get(user__id=request.user.id)
+    perfil = 'paciente'
+    turno = Turno.objects.filter((Q(aprobacion=True) | Q(aprobacion=False)) & Q(cancelado=False) & Q(asistencia=False) & Q(vacuna__name='FA') & Q(user=paciente))
+    vacuna_dada = Paciente_Vacuna.objects.filter(Q(paciente=paciente) & Q(vacuna__name='FA'))
+    if(request.method == 'POST'):      
+        vacuna = Vacuna.objects.get(name='FA')
+        fecha = request.POST.get('fecha')  
+        turno = Turno.objects.create(user=paciente, posta=paciente.posta, vacuna=vacuna, fecha=fecha)
+        turno.save()
+
         return redirect('home')
     if(paciente.calcularEdad() > 60):
-        messages.error(request, 'No deberia vacunarse contra la fiebre amarilla si es mayor a 60 años')
+        messages.error(request, 'Usted no puede reservar turno por ser mayor de 60 años')
+        context = {'perfil':perfil}
+        return redirect('home')
+    elif(turno.exists()):
+        messages.error(request, 'Usted no puede reservar turno por que ya posee un turno')
+        context = {'perfil':perfil}
+        return redirect('home')
+    elif(vacuna_dada.exists()):
+        messages.error(request, 'Usted ya se aplico la vacuna de fiebre amarilla')
         context = {'perfil':perfil}
         return redirect('home')
     else:
-        turno_existente = Turno.objects.filter(Q(user=paciente) & Q(vacuna__name='FA') & (Q(aprobacion=True) | Q(aprobacion=False)) & Q(cancelado=False))
-        if(turno_existente.exists()):
-            messages.error(request, 'Ya tiene un turno asignado o pendiente')
-            context = {'perfil':perfil}
-            return redirect('home')
-        else:
-            context = {'perfil':perfil, 'hoy':date.today()}
-            return render(request, 'base/solicitar_turno_fiebre_amarilla.html', context)
+        context = {'perfil': perfil, 'hoy': date.today()}
+        return render(request, 'base/reserva_turno_fa.html', context)
 
-#-------Mostrar las vacunas administradas del dia.-------#
-@login_required(login_url='login_general')
-def verVacunasDelDia(request):
-    usuario = User.objects.get(id=request.user.id)
-    if(usuario.groups.filter(name='paciente')):
-        perfil = 'paciente'
-    elif(usuario.groups.filter(name='administrador')):
-        perfil = 'administrador'
-    else:
-        perfil = 'vacunador'
-    turnos = Turno.objects.filter(Q(asistencia=True) & Q(fecha=date.today()))
-    if(turnos.exists()):
-        context = {'perfil':perfil, 'turnos':turnos}
-        return render(request, 'base/vacunas_del_dia.html', context)
-    else:
-        messages.error(request, 'No se administraron vacunas en el dia.')
-        context = {'perfil':perfil}
-        return redirect('home')
-
-#-------Mostrar los turnos cancelados del dia.-------#
-@login_required(login_url='login_general')
-def verTurnosCanceladosDelDia(request):
-    usuario = User.objects.get(id=request.user.id)
-    if(usuario.groups.filter(name='paciente')):
-        perfil = 'paciente'
-    elif(usuario.groups.filter(name='administrador')):
-        perfil = 'administrador'
-    else:
-        perfil = 'vacunador'
-    turnos = Turno.objects.filter(Q(asistencia=False) & Q(fecha=date.today()))
-    if(turnos.exists()):
-        context = {'perfil':perfil, 'turnos':turnos}
-        return render(request, 'base/vacunas_del_dia.html', context)
-    else:
-        messages.error(request, 'No hay turnos cancelados en el dia.')
-        context = {'perfil':perfil}
-        return redirect('home')
+def GenerarComprobante(request, pk):
+    vacuna = Paciente_Vacuna.objects.get(pk=pk)
+    template_name = "base/comprobante.html"
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    path = os.path.join( BASE_DIR , 'static') 
+    return utils.render_pdf(
+        template_name,
+        {
+            "vacuna": vacuna,
+            "path": path,
+        },
+    )

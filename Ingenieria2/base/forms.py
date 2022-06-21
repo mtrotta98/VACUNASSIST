@@ -1,7 +1,7 @@
 import re
 from django.forms import ModelForm
 
-from .models import Paciente, Vacunador, Posta
+from .models import Paciente, Vacunador, Posta, Turno
 from datetime import date
 from django.contrib.auth.models import User
 from django import forms
@@ -289,3 +289,21 @@ class FormularioCambioContraseña(ModelForm):
         super(FormularioCambioContraseña, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+#-------Formulario asignar Turno-------#
+
+class FormularioAsignarTurno(ModelForm):
+    #https://docs.djangoproject.com/en/4.0/ref/class-based-views/generic-editing/#django.views.generic.edit.UpdateView
+    dni = forms.CharField(required=True, label='Dni', help_text='Ingrese el dni sin puntos.', widget=forms.TextInput())
+    class Meta():
+        model = Turno
+        fields = ('fecha','user','vacuna','horario')
+        exclude = ('aprobacion','cancelado','asistencia','posta',)
+
+    def __init__(self, *args, **kwargs):
+        super(FormularioAsignarTurno, self).__init__(*args, **kwargs)
+        self.fields["fecha"].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+

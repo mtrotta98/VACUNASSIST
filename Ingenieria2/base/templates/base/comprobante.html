@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+      #upp {
+        width: 30%;
+        /*background:red;*/
+      }
+
+      .alignleft {
+        padding-left: 130px;
+      }
+      .alignright {
+        padding-left: 100px;
+        padding-right: 30px;
+      }
+
+      h1{
+        text-align: center;
+      }
+
+      p{
+        font-weight: bold;
+        margin-bottom: 35px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <img src="{{path}}/img/logo.png" width="90px" height="90px" />
+    <h1>Certificado de Vacunacion</h1>
+    <p>Certificamos que el paciente {{vacuna.paciente.user.first_name}} {{vacuna.paciente.user.last_name}} con dni {{vacuna.paciente.dni}} se aplico la vacuna de {{vacuna.vacuna.get_name_display}} en el dia {{vacuna.fecha|date:'Y-m-d'}} en el Centro de Vacunacion de La Plata.</p>
+    <table id="upp">
+        <tr>
+          <td>
+            <img src="{{path}}/img/frame.png" width="150px" height="150px" class="alignleft">
+          </td>
+          <td></td>
+          <td align="right">
+             <p class="alignright">Firma:__________________</p>
+          </td>
+        </tr>
+      </table>
+</body>
+</html>

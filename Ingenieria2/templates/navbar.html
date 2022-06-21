@@ -8,14 +8,15 @@
       {% if request.user.is_authenticated %}
         {% if perfil == 'paciente' %}
           <ul class="nav justify-content-end">
-            <li class="nav-item">
-              <a href="{% url 'solicitar_turno_fiebre_amarilla' %}" class="nav-link text-white">Solicitar Turno Fiebre Amarilla</a>
-            </li>
-            <li class="nav-item">
-              <a href="{% url 'ver_mis_vacunas' %}" class="nav-link text-white">Mis Vacunas</a>
-            </li>
-            <li class="nav-item">
-              <a href="{% url 'ver_mis_turnos' %}" class="nav-link text-white">Mis Turnos</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Turnos/Vacunas
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'ver_turnos_paciente'  %}">Ver mis Turnos</a></li>
+                <li><a class="dropdown-item" href="{% url 'ver_vacunas_paciente'  %}">Ver mis Vacunas</a></li>
+                <li><a class="dropdown-item" href="{% url 'reserva_turno_fa'  %}">Reservar turno de Fiebre Amarilla</a></li>
+              </ul>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -32,24 +33,22 @@
           </ul>
         {% elif perfil == 'vacunador' %}
           <ul class="nav justify-content-end">
-            <li class="nav-item">
-              <a href="{% url 'asignar_turno_paciente' %}" class="nav-link text-white">Asignar Turno a Paciente</a>
-            </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Turnos
+                Turnos/Vacunas
               </a>
               <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
                 <li><a class="dropdown-item" href="{% url 'ver_turnos_del_dia_vacunador' %}">Turnos del Dia</a></li>
-                <li><a class="dropdown-item" href="{% url 'vacunas_del_dia' %}">Vacunas del Dia</a></li>
-                <li><a class="dropdown-item" href="{% url 'turnos_cancelados_del_dia' %}">Turnos Cancelados del Dia</a></li>
+                <li><a class="dropdown-item" href="{% url 'turnos_cancelados_del_dia' %}">Turnos cancelados del Dia</a></li>
+                <li><a class="dropdown-item" href="{% url 'pre_asignar_turno'  %}">Asignar Turno</a></li>
+                <li><a class="dropdown-item" href="{% url 'ver_vacunas_administradas'  %}">Ver Vacunas Administradas</a></li>
               </ul>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 {{request.user.first_name}} {{request.user.last_name}}
               </a>
-              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">   
                 <li><a class="dropdown-item" href="{% url 'ver_vacunador'  %}">Perfil</a></li>
                 <li><a class="dropdown-item" href="{% url 'cambiar_contraseña' request.user.id %}">Cambiar contraseña</a></li>
                 <li><a class="dropdown-item" href="{% url 'crear_paciente'  %}">Registrar Paciente</a></li>
@@ -63,13 +62,13 @@
           <ul class="nav justify-content-end">
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Turnos
+                Turnos/Vacunas
               </a>
               <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'ver_vacunas_administradas'  %}">Ver Vacunas Administradas</a></li>
                 <li><a class="dropdown-item" href="{% url 'ver_turnos_del_dia_vacunador' %}">Turnos del Dia</a></li>
-                <li><a href="{% url 'ver_turnos_fiebre_amarilla' %}" class="dropdown-item">Fiebre Amarilla</a></li>
-                <li><a class="dropdown-item" href="{% url 'vacunas_del_dia' %}">Vacunas del Dia</a></li>
-                <li><a class="dropdown-item" href="{% url 'turnos_cancelados_del_dia' %}">Turnos Cancelados del Dia</a></li>
+                <li><a class="dropdown-item" href="{% url 'aceptar_turno_fa' %}">Evaluar turnos fiebre amarilla</a></li>
+                <li><a class="dropdown-item" href="{% url 'turnos_cancelados_del_dia' %}">Turnos cancelados del Dia</a></li>
               </ul>
             </li>
             <li class="nav-item dropdown">

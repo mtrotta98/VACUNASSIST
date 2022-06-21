@@ -1,0 +1,75 @@
+
+{% extends 'main.html' %}
+
+{% block title %}
+  <title>VACUNASSIST | Turnos de Fiebre Amarilla</title>
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+            <strong>{{message}}</strong>
+        {% endfor %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+
+<body>      
+    <div class="container-fluid" style="background-color: #c1fc9e; min-height: 100vh;">
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="row">
+                    <label for="">Posta</label>
+                    <div class="col-12">
+                        <input class="form-control"  name="posta" id="posta_ASTU" value="{{posta}}" disabled=True>
+                    </div>
+                </div>
+                <div class="row">
+                    <label for="">Fecha</label>
+                    <div class="col-12">
+                        <input class="form-control"  name="fecha" id="fecha_ASTU" value="{{hoy|date:'Y-m-d'}}" disabled=True>
+                    </div>
+                </div>
+                <div class="row">
+                    <label for="">DNI</label>
+                    <div class="col-12">
+                        <input class="form-control"  name="dni" id="dni_ASTU" value="{{dni_paciente}}" disabled=True>
+                    </div>
+                </div>
+                <div class="row"  id="row_nombre_apellido_ASTU">
+                    <label for="">Nombre y Apellido</label>
+                    <div class="col-12">
+                        <input class="form-control"  name="fecha" id="nombre_apellido_ASTU" value="{{nombre_paciente}}" disabled=True>
+                    </div>
+                </div>
+                <div class="row"  id="row_vacuna_ASTU">
+                    <label for="">Vacuna</label>
+                    <div class="col-12">
+                        <select name="vacunas disponibles" id="vacunas disponibles" class="form-control">
+                            {% for vacuna in vacunas_disponibles %}
+                            <option >{{vacuna}}</option>
+                            {% endfor %} 
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mt-3">
+                      <input type="submit" name="Cargar" class="btn btn-primary" value="Cargar" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+
+</body>
+
+</html>
+{% endblock %}
