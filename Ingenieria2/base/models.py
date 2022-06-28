@@ -143,12 +143,14 @@ class Paciente(models.Model):
             fecha = date.today() + timedelta(days=15)
             vacuna = Vacuna.objects.get(name='CV1')
             turno = Turno.objects.create(user=self, fecha=fecha, posta=self.posta, horario=self.crearHorarioAleatorio(), vacuna=vacuna, aprobacion=True, cancelado=False, asistencia=False)
+            self.enviar_mail_recordatorio(turno.fecha, turno.vacuna, True)
+            turno.save()
         elif(self.calcularEdad() > 60):
             fecha = date.today() + timedelta(days=6)
             vacuna = Vacuna.objects.get(name='CV1')
             turno = Turno.objects.create(user=self, fecha=fecha, posta=self.posta, horario=self.crearHorarioAleatorio(), vacuna=vacuna, aprobacion=True, cancelado=False, asistencia=False)
-        self.enviar_mail_recordatorio(turno.fecha, turno.vacuna, True)
-        turno.save()
+            self.enviar_mail_recordatorio(turno.fecha, turno.vacuna, True)
+            turno.save()
 
     def asignarTurnoCovid2(self):
         covid1 = Paciente_Vacuna.objects.get(Q(paciente=self) & Q(vacuna__name='CV1'))

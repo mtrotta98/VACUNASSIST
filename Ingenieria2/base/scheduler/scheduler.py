@@ -23,7 +23,7 @@ def enviar_recordatorios():
 def start():
     scheduler = BackgroundScheduler()
     #ejecutar tarea todos los dias a las 20:15 pm
-    trigger = OrTrigger([CronTrigger(day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=10, minute=37)])
+    trigger = OrTrigger([CronTrigger(day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=20, minute=15)])
     scheduler.add_jobstore(DjangoJobStore(), "default")
     scheduler.add_job(enviar_recordatorios, trigger)
     register_events(scheduler)

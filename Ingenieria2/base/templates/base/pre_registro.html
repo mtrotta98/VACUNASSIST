@@ -1,0 +1,30 @@
+{% extends 'main.html' %}
+
+{% block title %}
+    <title>VACUNASSIST | Pre-Registro</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
+    <form method="POST" action="">
+        {% csrf_token %}
+        <div class="row">
+            <div style="margin-left: 80px;" class="col-12">
+                <h3>Seleccione su ubicacion</h3>
+            </div>
+        </div>
+        <div id="map" style="width:700px; height:500px; margin-left:80px;"></div>
+        <div style="margin-top: 10px; margin-left: 65px;" class="row" hidden>
+            <div class="col-4">
+                <input id="lat" name="lat" class="form-control" type="text" readonly>
+            </div>  
+            <div class="col-4">
+                <input id="lon" name="lon" class="form-control" type="text" readonly>
+            </div>
+        </div>
+        <input style="margin-left: 80px; margin-top:10px;" type="submit" class="btn btn-primary" value="Enviar">
+    </form>
+</div>
+
+{% endblock content %}

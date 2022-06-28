@@ -25,13 +25,26 @@
               <select name="posta" id="posta" class="form-control">
 
                 {% if request.user.is_authenticated %}
-                <option selected value={{posta}}>{{posta_por_defecto}}</option>
+                  <option selected value={{posta}}>{{posta_por_defecto}}</option>
+                  <option value="Z1">Municipalidad</option>
+                  <option value="Z2">Cementerio</option>
+                  <option value="Z3">Terminal</option>
                 {% else %}
-                <option selected value="NA">Seleccione una posta</option>
+                  <option selected value="NA">Seleccione una posta</option>
+                  {% if cercania == 'municipalidad' %}
+                    <option value="Z1">Municipalidad (Mas cercano)</option>
+                    <option value="Z2">Cementerio</option>
+                    <option value="Z3">Terminal</option>
+                  {% elif cercania == 'cementerio' %}
+                    <option value="Z1">Municipalidad</option> 
+                    <option value="Z2">Cementerio (Mas cercano)</option>
+                    <option value="Z3">Terminal</option>
+                  {% elif cercania == 'terminal' %}
+                    <option value="Z1">Municipalidad</option>
+                    <option value="Z2">Cementerio</option>
+                    <option value="Z3">Terminal (Mas cercano)</option>
+                  {% endif %}
                 {% endif %}
-                <option value="Z1">Municipalidad</option>
-                <option value="Z2">Cementerio</option>
-                <option value="Z3">Terminal</option>
               </select>
             </div>
         </div> 

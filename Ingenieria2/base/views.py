@@ -20,6 +20,7 @@ from django.utils.crypto import get_random_string
 from . import utils
 from pathlib import Path
 import os
+from math import sin, cos, sqrt, atan2, radians
 
 diccionario_vacunas = { 'Gripe' : 'GR',
     'Covid Primera Dosis' : 'CV1',
@@ -31,6 +32,8 @@ diccionario_zonas = { 'Municipalidad' : 'Z1',
         'Cementerio': 'Z2',
         'Terminal': 'Z3',
         'No Aplica':'NA' }
+
+cercania = ''
 
 #------Login de paciente-------#
 def loginPaciente(request):
@@ -82,6 +85,7 @@ def logoutUser(request):
 
 #------Registro de paciente------#
 def registrarse(request):
+    global cercania
     if(request.method == 'POST'):
         formUsuario = FormularioUsuario(request.POST)
         formPaciente = FormularioPaciente(request.POST)
@@ -99,13 +103,14 @@ def registrarse(request):
             paciente.token = get_random_string(length=4)
             paciente.enviar_mail_registro()
             paciente.save()
+            cercania = ''
             return redirect('login_paciente')
         else:
-            context = {'formUsuario': formUsuario, 'formPaciente': formPaciente}
+            context = {'formUsuario': formUsuario, 'formPaciente': formPaciente, 'cercania':cercania}
             return render(request, 'base/registro_paciente.html', context)
     formularioUsuario = FormularioUsuario()
     formularioPaciente = FormularioPaciente()
-    context = {'formUsuario': formularioUsuario, 'formPaciente': formularioPaciente}
+    context = {'formUsuario': formularioUsuario, 'formPaciente': formularioPaciente, 'cercania':cercania}
     return render(request, 'base/registro_paciente.html', context)
 
 def home(request):
@@ -724,3 +729,63 @@ def GenerarComprobante(request, pk):
             "path": path,
         },
     )
+
+def preRegistro(request):
+    global cercania
+    if(request.method == 'POST'):
+        R = 6373.0
+
+        latIngresada = float(request.POST.get('lat'))
+        lonIngresada = float(request.POST.get('lon'))
+        lat1 = radians(latIngresada)
+        lon1 = radians(lonIngresada)
+
+        latMunicipalidad = radians(-34.920208540499786)
+        lonMunicipalidad = radians(-57.953281176153446)
+
+        latTerminal = radians(-34.90572563634884)
+        lonTerminal = radians(-57.954109713467034)
+
+        latCementerio = radians(-34.955209808688814)
+        lonCementerio = radians(-57.954427720303)
+
+        dlonMunicipalidad = lonMunicipalidad - lon1
+        dlatMunicipalidad = latMunicipalidad - lat1
+
+        dlonTerminal = lonTerminal - lon1
+        dlatTerminal = latTerminal - lat1 
+
+        dlonCementerio = lonCementerio - lon1
+        dlatCementerio = latCementerio - lat1   
+
+        aMuni = sin(dlatMunicipalidad / 2)**2 + cos(lat1) * cos(latMunicipalidad) * sin(dlonMunicipalidad / 2)**2
+        cMuni = 2 * atan2(sqrt(aMuni), sqrt(1 - aMuni))
+
+        distanceMuni = R * cMuni
+
+        aTerminal = sin(dlatTerminal / 2)**2 + cos(lat1) * cos(latTerminal) * sin(dlonTerminal / 2)**2
+        cTerminal = 2 * atan2(sqrt(aTerminal), sqrt(1 - aTerminal))
+
+        distanceTerminal = R * cTerminal
+
+        aCementerio = sin(dlatCementerio / 2)**2 + cos(lat1) * cos(latCementerio) * sin(dlonCementerio / 2)**2
+        cCementerio = 2 * atan2(sqrt(aCementerio), sqrt(1 - aCementerio))
+
+        distanceCementerio = R * cCementerio
+
+        if((distanceMuni < distanceCementerio) and (distanceMuni < distanceTerminal)):
+            cercania = 'municipalidad'
+        elif(distanceCementerio < distanceTerminal):
+            cercania = 'cementerio'
+        else:
+            cercania = 'terminal'
+
+        return redirect('registro')
+
+    context = {}
+    return render(request, 'base/pre_registro.html', context)
+
+
+#muni: -34.920208540499786, -57.953281176153446
+#terminal: -34.90572563634884, -57.954109713467034
+#cementerio: -34.955209808688814, -57.954427720303

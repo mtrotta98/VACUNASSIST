@@ -55,3 +55,47 @@ $(document).ready(function(){
         
     ;
 });
+
+var map;  
+var markers = [];
+
+function initMap() {
+    // create the maps
+    var lat_lng = {lat: -34.921370606389594, lng: -57.95480962673844}; 
+
+    map = new google.maps.Map(document.getElementById('map'), {  
+        zoom: 15,  
+        center: lat_lng,  
+        mapTypeId: google.maps.MapTypeId.TERRAIN  
+    });
+
+    map.addListener('click', function(event) {  
+        addMarker(event.latLng);
+    });  
+}
+
+function addMarker(location) {
+    deleteMarkers()
+    var marker = new google.maps.Marker({  
+      position: location,  
+      map: map  
+    });
+    document.getElementById('lat').value = location.lat()
+    document.getElementById('lon').value = location.lng()
+    markers.push(marker); 
+}
+
+function deleteMarkers(){
+    hideMarkers();
+    markers = [];
+  }
+
+function hideMarkers(){
+    setMapOnAll(null);
+}
+
+function setMapOnAll(map) {
+    for (let i = 0; i < markers.length; i++) {
+      markers[i].setMap(map);
+    }
+  }
