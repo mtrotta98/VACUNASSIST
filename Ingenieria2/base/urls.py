@@ -32,5 +32,10 @@ urlpatterns = [
     path('turnos_cancelados_del_dia', views.turnosCancelados, name="turnos_cancelados_del_dia"),
     path('reserva_turno_fa', views.reservarTurnoFA, name="reserva_turno_fa"),
     path('comprobante_vacuna/<str:pk>/', views.GenerarComprobante, name='comprobante_vacuna'),
+    path('ver_analytics/', views.verAnalytics, name='ver_analytics'),
     path('pre_registro/', views.preRegistro, name='pre_registro'),
+    path('turnos_aprobados/', views.verTurnosAprobados, name='turnos_aprobados'),
+    path('ver_subzonas/', views.verSubZonas, name='ver_subzonas'),
+    path('modificar_subzona/<str:pk>/', views.modificarSubZona, name='modificar_subzona'),
+    path('nuevaSubZona/<str:pk>/', views.nuevaSubZona, name="nuevaSubZona"),
 ]

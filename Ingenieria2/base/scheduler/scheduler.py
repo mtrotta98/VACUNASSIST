@@ -12,7 +12,7 @@ from django.db.models import Q
 # This is the function you want to schedule - add as many as you want and then register them in the start() function below
 def enviar_recordatorios():
     fecha_mañana = date.today() + timedelta(days=1)
-    turnos = Turno.objects.filter(Q(fecha=fecha_mañana) & Q(aprobacion=True))
+    turnos = Turno.objects.filter(Q(fecha=fecha_mañana) & Q(aprobacion=True) & Q(asistencia=False))
     if(turnos.exists()):
         for turno in turnos:
             turno.user.enviar_mail_recordatorio(turno.fecha, turno.vacuna, False)

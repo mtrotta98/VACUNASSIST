@@ -8,11 +8,22 @@
     <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
         <form action="#" method="POST">
             {% csrf_token %}
-            <table class="table table-striped">
+            <div class="row">
+              <div class="col-4">
+                <label for="">Buscar</label>
+                <input type="text" class="form-control search-input filter-table" name="buscar_nombre" id="buscar_nombre" placeholder="buscar nombre..." data-column-id="1" data-table-id="turnos">
+              </div>
+              <div class="col-4">
+                <label for="">Buscar</label>
+                <input type="text" class="form-control search-input filter-table" name="buscar_apellido" id="buscar_apellido" placeholder="buscar apellido..." data-column-id="2" data-table-id="turnos">
+              </div>
+            </div>
+            <table id="turnos" class="table table-striped">
                 <thead>
                 <tr>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Apellido</th>
                   <th scope="col">DNI Paciente</th>
-                  <th scope="col">Nombre Paciente</th>
                   <th scope="col">Vacuna</th>
                   <th scope="col">Posta</th>
                   <th scope="col">Fecha</th>
@@ -20,9 +31,10 @@
               </thead>
               <tbody>
               {% for turno in turnos %}
-                  <tr>
-                      <td>{{turno.user.dni}}</td>   
-                      <td>{{turno.user.user.get_full_name}}</td>
+                  <tr>   
+                      <td>{{turno.user.user.first_name}}</td>
+                      <td>{{turno.user.user.last_name}}</td>
+                      <td>{{turno.user.dni}}</td>
                       <td>{{turno.vacuna.get_name_display}}</td>
                       <td>{{turno.posta.printNombre}}</td>
                       <td>{{turno.fecha|date:'Y-m-d'}}</td>

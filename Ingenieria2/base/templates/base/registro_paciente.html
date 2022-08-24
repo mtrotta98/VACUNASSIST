@@ -43,6 +43,10 @@
                     <option value="Z1">Municipalidad</option>
                     <option value="Z2">Cementerio</option>
                     <option value="Z3">Terminal (Mas cercano)</option>
+                  {% elif cercania == '' %}
+                    <option value="Z1">Municipalidad</option>
+                    <option value="Z2">Cementerio</option>
+                    <option value="Z3">Terminal</option>
                   {% endif %}
                 {% endif %}
               </select>

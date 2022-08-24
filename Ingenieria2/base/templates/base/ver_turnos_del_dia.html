@@ -3,12 +3,21 @@
 {% block title %}
   <title>VACUNASSIST | Turnos del Dia</title>
 {% endblock %}
-
 {% block content %}
     <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh">
-        <form action="#" method="POST">
+      <form action="#" method="POST">
             {% csrf_token %}
-            <table class="table table-striped">
+            <div class="row">
+              <div class="col-4">
+                <label for="">Buscar</label>
+                <input type="text" class="form-control search-input filter-table" name="buscar_nombre" id="buscar_nombre" placeholder="buscar nombre..." data-column-id="1" data-table-id="turnos">
+              </div>
+              <div class="col-4">
+                <label for="">Buscar</label>
+                <input type="text" class="form-control search-input filter-table" name="buscar_apellido" id="buscar_apellido" placeholder="buscar apellido..." data-column-id="2" data-table-id="turnos">
+              </div>
+            </div>
+            <table id="turnos" class="table table-striped">
                 <thead>
                 <tr>
                     <th scope="col">Nombre</th>

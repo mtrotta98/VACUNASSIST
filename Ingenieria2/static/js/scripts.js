@@ -53,19 +53,30 @@ $(document).ready(function(){
         document.getElementById('row_horario_ASTU').removeAttribute('hidden')
     })
         
-    ;
+
 });
+
 
 var map;  
 var markers = [];
+const LaPlata = {
+    north: -34.81936536255149, //-34.81936536255149, -57.96880667574618
+    south: -35.02991601497499, //-35.02991601497499, -57.950256047701615
+    west: -58.14412828713677, //-34.95720890319979, -58.14412828713677
+    east: -57.80657962260428, //-34.94260009885324, -57.80657962260428
+  };
 
 function initMap() {
     // create the maps
     var lat_lng = {lat: -34.921370606389594, lng: -57.95480962673844}; 
 
     map = new google.maps.Map(document.getElementById('map'), {  
-        zoom: 15,  
-        center: lat_lng,  
+        zoom: 15,
+        center: lat_lng,
+        restriction: {
+            latLngBounds: LaPlata,
+            strictBounds: false,
+        } , 
         mapTypeId: google.maps.MapTypeId.TERRAIN  
     });
 
@@ -99,3 +110,17 @@ function setMapOnAll(map) {
       markers[i].setMap(map);
     }
   }
+
+  $(document).on('input', '.filter-table', function () {
+    var tableName = $(this).attr('data-table-id');
+    var searchKey1 = $("[data-column-id='1']").val().toLowerCase();
+    var searchKey2 = $("[data-column-id='2']").val().toLowerCase();
+    var searchKey5 = $("[data-column-id='5']").val();
+    
+    $("#" + tableName + " tbody tr").filter(function () {
+      var columnSearch1 = !searchKey1 || $(this).children().eq(0).text().toLowerCase().indexOf(searchKey1) > -1;
+      var columnSearch2 = !searchKey2 || $(this).children().eq(1).text().toLowerCase().indexOf(searchKey2) > -1;
+      var columnSearch5 = !searchKey5 || $(this).children().eq(4).text().toLowerCase().indexOf(searchKey5) > -1;
+      $(this).toggle(columnSearch1 && columnSearch2 && columnSearch5);
+    }); 
+  });

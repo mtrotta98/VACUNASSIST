@@ -1,7 +1,7 @@
 import re
 from django.forms import ModelForm
 
-from .models import Paciente, Vacunador, Posta, Turno
+from .models import Paciente, Vacunador, Posta, Turno, Subzona
 from datetime import date
 from django.contrib.auth.models import User
 from django import forms
@@ -307,3 +307,14 @@ class FormularioAsignarTurno(ModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class FormularioVerSubZonas(ModelForm):
+    posta = forms.CharField(required=True, label='Posta', widget=forms.TextInput())
+    nombre = forms.CharField(required=True, label='Nombre', widget=forms.TextInput())
+    class Meta():
+        model = Subzona
+        fields = ["posta", "name"]
+
+    def __init__(self, *args, **kwargs):
+        super(FormularioVerSubZonas, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

@@ -15,8 +15,14 @@
             {% endfor %}
             </ul>
         {% endif %}
+        {{formUsuario.non_field_errors}}
         <div class="row">
-            {{formUsuario.non_field_errors}}
+          <div class="col-6">
+            <label for="">Contraseña Actual</label>
+            <input class="form-control" type="password" name="contraseña_vieja" id="contraseña_vieja">
+          </div>
+        </div>
+        <div class="row">
             {% for field in formUsuario %}
             <div class="col-6">
                 {{field.label}}

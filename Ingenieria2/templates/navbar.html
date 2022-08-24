@@ -42,6 +42,7 @@
                 <li><a class="dropdown-item" href="{% url 'turnos_cancelados_del_dia' %}">Turnos cancelados del Dia</a></li>
                 <li><a class="dropdown-item" href="{% url 'pre_asignar_turno'  %}">Asignar Turno</a></li>
                 <li><a class="dropdown-item" href="{% url 'ver_vacunas_administradas'  %}">Ver Vacunas Administradas</a></li>
+
               </ul>
             </li>
             <li class="nav-item dropdown">
@@ -69,6 +70,8 @@
                 <li><a class="dropdown-item" href="{% url 'ver_turnos_del_dia_vacunador' %}">Turnos del Dia</a></li>
                 <li><a class="dropdown-item" href="{% url 'aceptar_turno_fa' %}">Evaluar turnos fiebre amarilla</a></li>
                 <li><a class="dropdown-item" href="{% url 'turnos_cancelados_del_dia' %}">Turnos cancelados del Dia</a></li>
+                <li><a class="dropdown-item" href="{% url 'turnos_aprobados' %}">Ver Turnos Aprobados</a></li>
+                <li><a class="dropdown-item" href="{% url 'ver_analytics'  %}">Ver Analytics</a></li>
               </ul>
             </li>
             <li class="nav-item dropdown">
@@ -78,6 +81,7 @@
               <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
                 <li><a class="dropdown-item" href="{% url 'crear_vacunador'  %}">Registrar Vacunador</a></li>
                 <li><a class="dropdown-item" href="{% url 'eliminar_vacunador' %}">Eliminar Vacunador</a></li>
+                <li><a class="dropdown-item" href="{% url 'ver_subzonas' %}">Ver Subzonas</a></li>
                 <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalCerrarSesion">
                   Cerrar Sesion
                 </button></li>
@@ -95,8 +99,7 @@
             </ul>
           </li>
           <li class="nav-item">
-            <a class="nav-link link-light" href="{% url 'pre_registro' %}">Registrarse</a>
-          </li>
+            <a class="nav-link link-light" href="{% url 'pre_registro' %}">Registrarse</a>          </li>
         </ul>
       {% endif %}
     </div>

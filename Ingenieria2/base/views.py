@@ -1,7 +1,10 @@
+from ast import Sub
+from asyncio.windows_events import NULL
 from email import contentmanager
+from re import sub
 from this import d
 from django.shortcuts import redirect, render
-from .forms import FormularioPaciente, FormularioUsuario, FormularioVacunador
+from .forms import FormularioPaciente, FormularioUsuario, FormularioVacunador, FormularioVerSubZonas
 from django.template import context
 from .forms import FormularioAsignarTurno, FormularioModificarVacunador,FormularioPaciente, FormularioUsuario, FormularioModificarUsuario, FormularioModificarPaciente, FormularioCambioContraseña,FormularioVerUsuario,FormularioVerPaciente, FormularioVerVacunador
 from base.models import Posta
@@ -10,7 +13,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
-from .models import Paciente, Paciente_Vacuna, Turno, Vacunador, Vacuna
+from .models import Paciente, Paciente_Vacuna, Subzona, Turno, Vacunador, Vacuna
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from datetime import date, datetime, timedelta
@@ -324,16 +327,19 @@ def cambioContraseña(request, pk):
         perfil = 'vacunador'
     if(request.method == 'POST'):
         formUsuario = FormularioCambioContraseña(request.POST, instance=user)
-        #user = User.objects.get(username=request.user.username)
-        if(formUsuario.is_valid()):
-            formUsuario.cleaned_data.pop('password_confirm')
-            user = formUsuario.save(commit=False)
-            user.set_password(formUsuario.cleaned_data['new_password'])
-            update_session_auth_hash(request, user)
-            user.save()
-            return redirect('home')
+        if(user.check_password(request.POST.get('contraseña_vieja'))):
+            if(formUsuario.is_valid()):
+                formUsuario.cleaned_data.pop('password_confirm')
+                user = formUsuario.save(commit=False)
+                user.set_password(formUsuario.cleaned_data['new_password'])
+                update_session_auth_hash(request, user)
+                user.save()
+                return redirect('home')
+            else:
+                context = {'formUsuario': formUsuario, 'perfil': perfil}
+                return render(request, 'base/cambio_contraseña.html', context)
         else:
-            formUsuario = FormularioCambioContraseña(instance=user)
+            messages.error(request, 'La contraseña actual ingresada es incorrecta.')
             context = {'formUsuario': formUsuario, 'perfil': perfil}
             return render(request, 'base/cambio_contraseña.html', context)
     formUsuario = FormularioCambioContraseña(instance=user)
@@ -412,6 +418,39 @@ def verTurnosDelDiaVacunador(request):
         context = {'perfil':perfil}
         return redirect('home')
 
+@login_required(login_url="login_general")
+def verAnalytics(request):
+    usuario = User.objects.get(id=request.user.id)
+    if(usuario.groups.filter(name='paciente')):
+        perfil = 'paciente'
+    elif(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+        turnos = Turno.objects.filter(Q(fecha=date.today()) & Q(aprobacion=True) & Q(asistencia=False))
+    else:
+        perfil = 'vacunador'
+        vacunador = Vacunador.objects.get(user=usuario)
+        turnos = Turno.objects.filter(Q(fecha=date.today()) & Q(aprobacion=True) & Q(asistencia=False) & Q(posta=vacunador.posta))
+    if(request.method == 'POST'):
+        asistencias = request.POST.getlist('turno_asistido')
+        for pk in asistencias:
+            turno = Turno.objects.filter(pk=pk).update(asistencia=True)
+            turno = Turno.objects.get(pk=pk)
+            observacion = request.POST.get('observacion'+str(turno.user.id))
+            observacion_paciente = Paciente.objects.filter(pk=turno.user.id).update(observaciones=observacion)
+            paciente_vacuna = Paciente_Vacuna.objects.create(paciente=turno.user, vacuna=turno.vacuna, fecha=turno.fecha)
+            paciente_vacuna.save()
+            if(turno.vacuna.name == 'CV1'):
+                paciente = Paciente.objects.get(pk=turno.user.id)
+                paciente.asignarTurnoCovid2()
+            elif(turno.vacuna.name == 'GR'):
+                paciente = Paciente.objects.get(pk=turno.user.id)
+                paciente.asignarTurnoGripe(False)
+        return redirect('home')
+    context = {'perfil':perfil, 'turnos': turnos}
+    return render(request, 'base/ver_analytics.html', context)
+
+
+
 
 @login_required(login_url="login_general")
 def aceptarTurnoFiebreAmarilla(request):
@@ -441,6 +480,7 @@ def cancelarTurnoFA(request, pk):
     turno = Turno.objects.get(pk=pk)
     turno.cancelado = True
     turno.save()
+    return redirect('cancelar_turno_fa')
     return redirect('aceptar_turno_fa')
 
 @login_required(login_url="login_general")
@@ -617,12 +657,27 @@ def preAsignarTurno(request):
             paciente = Paciente.objects.get(dni=int(dni_paciente))
             vacunas_disponibles = ["Covid Primera Dosis", "Covid Segunda Dosis", "Gripe", 'Fiebre Amarilla']
             vacunas_dadas = Paciente_Vacuna.objects.filter(paciente=paciente)
+            print("paciente", paciente.user_id)
+            turnos_del_dia = Turno.objects.filter(user_id=paciente.id)
+            for turno in turnos_del_dia:
+                if turno.vacuna_id == 8 and "Gripe" in vacunas_disponibles:
+                    print('turno vacuna id', turno.vacuna_id)
+                    vacunas_disponibles.remove('Gripe')
+                elif turno.vacuna_id == 9 and "Covid Primera Dosis" in vacunas_disponibles:
+                    vacunas_disponibles.remove('Covid Primera Dosis')
+                elif turno.vacuna_id == 10  and "Covid Segunda Dosis" in vacunas_disponibles:
+                    vacunas_disponibles.remove('Covid Segunda Dosis')
+                elif turno.vacuna_id == 11 and 'Fiebre Amarilla' in vacunas_disponibles:
+                    vacunas_disponibles.remove('Fiebre Amarilla')
+
+            print("turnos", turnos_del_dia)
             if paciente.edad() < 18:
                     vacunas_disponibles.remove("Covid Primera Dosis")
                     vacunas_disponibles.remove("Covid Segunda Dosis")
             if paciente.edad() > 60:
                 vacunas_disponibles.remove('Fiebre Amarilla')
-                
+            
+
             for vacuna_dada in vacunas_dadas:
                 if vacuna_dada.vacuna.name == 'FA' and 'Fiebre Amarilla' in vacunas_disponibles:
                     vacunas_disponibles.remove('Fiebre Amarilla')
@@ -642,6 +697,7 @@ def preAsignarTurno(request):
                 return redirect(url)
     context = {'perfil':perfil}
     return render(request, 'base/pre_asignar_turno.html',context)
+
 
 @login_required(login_url="login_general")
 def asignarTurno(request):
@@ -664,7 +720,17 @@ def asignarTurno(request):
             vacunas_disponibles.remove("Covid Segunda Dosis")
     if paciente.edad() > 60:
         vacunas_disponibles.remove('Fiebre Amarilla')
-
+    turnos_del_dia = Turno.objects.filter(user_id=paciente.id)
+    for turno in turnos_del_dia:
+        if turno.vacuna_id == 8 and "Gripe" in vacunas_disponibles:
+            print('turno vacuna id', turno.vacuna_id)
+            vacunas_disponibles.remove('Gripe')
+        elif turno.vacuna_id == 9 and "Covid Primera Dosis" in vacunas_disponibles:
+            vacunas_disponibles.remove('Covid Primera Dosis')
+        elif turno.vacuna_id == 10  and "Covid Segunda Dosis" in vacunas_disponibles:
+            vacunas_disponibles.remove('Covid Segunda Dosis')
+        elif turno.vacuna_id == 11 and 'Fiebre Amarilla' in vacunas_disponibles:
+            vacunas_disponibles.remove('Fiebre Amarilla')
     for vacuna_dada in vacunas_dadas:
         if vacuna_dada.vacuna.name == 'FA' and 'Fiebre Amarilla' in vacunas_disponibles:
             vacunas_disponibles.remove('Fiebre Amarilla')
@@ -729,58 +795,105 @@ def GenerarComprobante(request, pk):
             "path": path,
         },
     )
+@login_required(login_url="login_general")
+def verTurnosAprobados(request):
+    usuario = User.objects.get(id=request.user.id)
+    if(usuario.groups.filter(name='administrador')):
+        perfil = 'administrador'
+        turnos = Turno.objects.filter(Q(aprobacion=True) & Q(asistencia=False) & Q(fecha__gte=date.today()))
+    if(turnos.exists()):   
+        context = {'perfil':perfil, 'turnos': turnos, 'hoy': date.today()}
+        return render(request, 'base/turnos_aprobados.html', context)
+    else:
+        messages.error(request, 'No hay turnos para mostrar.')
+        return redirect('home')
+
+def verSubZonas(request):
+    usuario = User.objects.get(id=request.user.id)
+    subzonas = Subzona.objects.filter()
+    perfil = 'administrador'
+    if(subzonas.exists()):   
+        context = {'perfil':perfil, 'subzonas': subzonas}
+        return render(request, 'base/ver_subzonas.html', context)
+    else:
+        messages.error(request, 'No hay informacion para mostrar.')
+        return redirect('home')
+
+def modificarSubZona(request, pk):
+    subzona = Subzona.objects.get(pk=pk)
+    subzonaId = Subzona.objects.get(id=subzona.id)
+    context = {'subzonaId':subzonaId, 'subzona':subzona}
+    return render(request, 'base/modificar_subzona.html', context)
+
+def nuevaSubZona(request, pk):
+    nuevaSubZona = request.POST.get("new")
+    subzona = Subzona.objects.get(pk=pk)
+    if(nuevaSubZona == ""):
+        messages.error(request, 'No se modifico la informacion.')
+        return redirect('home')
+    else:
+        if(nuevaSubZona == subzona.name):
+            messages.error(request, 'La informacion coincide con el campo que desea modificar.')
+            return redirect('home')
+        else:
+            subzona.name = nuevaSubZona
+            subzona.save()
+            return redirect('ver_subzonas')
 
 def preRegistro(request):
     global cercania
     if(request.method == 'POST'):
         R = 6373.0
+        cercania = ''
+        if(request.POST.get('lat') != ''):
+            latIngresada = float(request.POST.get('lat'))
+            lonIngresada = float(request.POST.get('lon'))
+            lat1 = radians(latIngresada)
+            lon1 = radians(lonIngresada)
 
-        latIngresada = float(request.POST.get('lat'))
-        lonIngresada = float(request.POST.get('lon'))
-        lat1 = radians(latIngresada)
-        lon1 = radians(lonIngresada)
+            latMunicipalidad = radians(-34.920208540499786)
+            lonMunicipalidad = radians(-57.953281176153446)
 
-        latMunicipalidad = radians(-34.920208540499786)
-        lonMunicipalidad = radians(-57.953281176153446)
+            latTerminal = radians(-34.90572563634884)
+            lonTerminal = radians(-57.954109713467034)
 
-        latTerminal = radians(-34.90572563634884)
-        lonTerminal = radians(-57.954109713467034)
+            latCementerio = radians(-34.955209808688814)
+            lonCementerio = radians(-57.954427720303)
 
-        latCementerio = radians(-34.955209808688814)
-        lonCementerio = radians(-57.954427720303)
+            dlonMunicipalidad = lonMunicipalidad - lon1
+            dlatMunicipalidad = latMunicipalidad - lat1
 
-        dlonMunicipalidad = lonMunicipalidad - lon1
-        dlatMunicipalidad = latMunicipalidad - lat1
+            dlonTerminal = lonTerminal - lon1
+            dlatTerminal = latTerminal - lat1 
 
-        dlonTerminal = lonTerminal - lon1
-        dlatTerminal = latTerminal - lat1 
+            dlonCementerio = lonCementerio - lon1
+            dlatCementerio = latCementerio - lat1   
 
-        dlonCementerio = lonCementerio - lon1
-        dlatCementerio = latCementerio - lat1   
+            aMuni = sin(dlatMunicipalidad / 2)**2 + cos(lat1) * cos(latMunicipalidad) * sin(dlonMunicipalidad / 2)**2
+            cMuni = 2 * atan2(sqrt(aMuni), sqrt(1 - aMuni))
 
-        aMuni = sin(dlatMunicipalidad / 2)**2 + cos(lat1) * cos(latMunicipalidad) * sin(dlonMunicipalidad / 2)**2
-        cMuni = 2 * atan2(sqrt(aMuni), sqrt(1 - aMuni))
+            distanceMuni = R * cMuni
 
-        distanceMuni = R * cMuni
+            aTerminal = sin(dlatTerminal / 2)**2 + cos(lat1) * cos(latTerminal) * sin(dlonTerminal / 2)**2
+            cTerminal = 2 * atan2(sqrt(aTerminal), sqrt(1 - aTerminal))
 
-        aTerminal = sin(dlatTerminal / 2)**2 + cos(lat1) * cos(latTerminal) * sin(dlonTerminal / 2)**2
-        cTerminal = 2 * atan2(sqrt(aTerminal), sqrt(1 - aTerminal))
+            distanceTerminal = R * cTerminal
 
-        distanceTerminal = R * cTerminal
+            aCementerio = sin(dlatCementerio / 2)**2 + cos(lat1) * cos(latCementerio) * sin(dlonCementerio / 2)**2
+            cCementerio = 2 * atan2(sqrt(aCementerio), sqrt(1 - aCementerio))
 
-        aCementerio = sin(dlatCementerio / 2)**2 + cos(lat1) * cos(latCementerio) * sin(dlonCementerio / 2)**2
-        cCementerio = 2 * atan2(sqrt(aCementerio), sqrt(1 - aCementerio))
+            distanceCementerio = R * cCementerio
 
-        distanceCementerio = R * cCementerio
+            if((distanceMuni < distanceCementerio) and (distanceMuni < distanceTerminal)):
+                cercania = 'municipalidad'
+            elif(distanceCementerio < distanceTerminal):
+                cercania = 'cementerio'
+            else:
+                cercania = 'terminal'
 
-        if((distanceMuni < distanceCementerio) and (distanceMuni < distanceTerminal)):
-            cercania = 'municipalidad'
-        elif(distanceCementerio < distanceTerminal):
-            cercania = 'cementerio'
+            return redirect('registro')
         else:
-            cercania = 'terminal'
-
-        return redirect('registro')
+            return redirect('registro')
 
     context = {}
     return render(request, 'base/pre_registro.html', context)

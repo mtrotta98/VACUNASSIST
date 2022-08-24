@@ -1,7 +1,7 @@
 {% extends 'main.html' %}
 
 {% block title %}
-  <title>VACUNASSIST | Turnos Cancelados del Dia</title>
+  <title>VACUNASSIST | Turnos Aprobados</title>
 {% endblock %}
 
 {% block content %}
@@ -17,9 +17,13 @@
                 <label for="">Buscar</label>
                 <input type="text" class="form-control search-input filter-table" name="buscar_apellido" id="buscar_apellido" placeholder="buscar apellido..." data-column-id="2" data-table-id="turnos">
               </div>
+              <div class="col-4">
+                <label for="">Buscar</label>
+                <input type="date" class="form-control search-input filter-table" name="buscar_fecha" id="buscar_fecha" placeholder="Buscar fecha..." min="{{hoy|date:'Y-m-d'}}" data-column-id="5" data-table-id="turnos">
+              </div>
             </div>
-              <table id="turnos" class="table table-striped">
-                <thead>
+            <table id="turnos" class="table table-striped">
+              <thead>
                 <tr>
                     <th scope="col">Nombre</th>
                     <th scope="col">Apellido</th>
@@ -28,10 +32,9 @@
                     <th scope="col">Fecha</th>
                     <th scope="col">Posta</th>
                 </tr>
-                </thead>
-                <tbody>
+              </thead>
+              <tbody>
                 {% for turno in turnos %}
-                    {% if perfil == 'administrador' %}
                     <tr>
                         <td>{{turno.user.user.first_name}}</td>
                         <td>{{turno.user.user.last_name}}</td>
@@ -39,22 +42,11 @@
                         <td>{{turno.vacuna.get_name_display}}</td>
                         <td>{{turno.fecha|date:'Y-m-d'}}</td>
                         <td>{{turno.posta.get_name_display}}</td>
+                        <td>
                     </tr>
-                    {% endif %}
-                    {% if perfil == 'vacunador' %}
-                    <tr>
-                        <td>{{turno.user.user.first_name}}</td>
-                        <td>{{turno.user.user.last_name}}</td>
-                        <td>{{turno.user.dni}}</td>
-                        <td>{{turno.vacuna.get_name_display}}</td>
-                        <td>{{turno.fecha|date:'Y-m-d'}}</td>
-                        <td>{{turno.posta.get_name_display}}</td>
-                    </tr>
-                    {% endif %}
                 {% endfor %}
-                </tbody>
+              </tbody>
             </table>
-            <a class="btn btn-primary" href="{% url 'home' %}"> Volver al Home </a>
         </form>
     </div>
 {% endblock %}
